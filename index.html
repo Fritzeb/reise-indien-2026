@@ -33,6 +33,9 @@
   html.sehrgross { --base: 28px; }
   * { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; }
+  /* Nichts darf breiter als der Bildschirm werden: lange Wörter umbrechen, Bilder/Tasten begrenzen */
+  main { overflow-wrap: break-word; -webkit-hyphens: auto; hyphens: auto; }
+  main * { max-width: 100%; }
   body {
     margin: 0;
     background: var(--bg);
@@ -52,9 +55,10 @@
   .screen.active { display: block; }
 
   /* Start-Kacheln */
-  .tiles { display: grid; gap: 10px; margin-top: 12px; }
+  /* minmax(0, 1fr): Spalte darf schmaler werden als der Inhalt (wichtig für Safari) */
+  .tiles { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; margin-top: 12px; }
   .tile {
-    display: flex; align-items: center; gap: 14px;
+    display: flex; align-items: center; gap: 14px; min-width: 0; overflow: hidden;
     width: 100%; min-height: 64px; padding: 8px 14px;
     border: 3px solid var(--blue); border-radius: 16px;
     background: var(--card); color: var(--text);
@@ -125,8 +129,8 @@
   .call-klein:active { background: var(--green-soft); }
 
   /* Zwei gleich große Aktions-Tasten */
-  .aktionen { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
-  .aktionen.eins { grid-template-columns: 1fr; }
+  .aktionen { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; margin-top: 14px; }
+  .aktionen.eins { grid-template-columns: minmax(0, 1fr); }
   .aktion {
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
     min-height: 76px; padding: 8px; border-radius: 14px;
@@ -172,7 +176,7 @@
   }
   .schrift button[aria-pressed="true"] { background: var(--blue); color: #fff; }
   /* Chat */
-  .vorschlaege { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; }
+  .vorschlaege { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; margin: 12px 0; }
   .vorschlaege button {
     min-height: 56px; padding: 8px 10px; border-radius: 12px; border: 2px solid var(--blue);
     background: var(--card); color: var(--blue); font: inherit; font-size: 0.85em; font-weight: 700;
@@ -194,7 +198,7 @@
   #chat-form { margin-top: 16px; padding: 8px 0 12px; }
   .chat-tasten { display: flex; gap: 8px; margin-top: 12px; }
   .chat-tasten button {
-    flex: 1; min-height: 52px; padding: 8px 10px; border-radius: 12px; border: 2px solid var(--blue);
+    flex: 1; min-width: 0; min-height: 52px; padding: 8px 10px; border-radius: 12px; border: 2px solid var(--blue);
     background: var(--card); color: var(--blue); font: inherit; font-size: 0.8em; font-weight: 700; cursor: pointer;
   }
   .chat-tasten button[hidden] { display: none; }
@@ -218,7 +222,7 @@
   .senden:disabled { opacity: 0.5; }
 
   .uhr { display: flex; gap: 12px; margin-top: 12px; }
-  .uhr > div { flex: 1; background: var(--card); border: 2px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+  .uhr > div { flex: 1; min-width: 0; background: var(--card); border: 2px solid var(--line); border-radius: 12px; padding: 10px 12px; }
   .uhr .zeit { font-size: 1.35em; font-weight: 800; white-space: nowrap; margin: 0; }
 </style>
 </head>
