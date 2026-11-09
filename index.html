@@ -42,8 +42,8 @@
     line-height: 1.45;
     padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
   }
-  main { max-width: 640px; margin: 0 auto; padding: 16px 16px 48px; }
-  h1 { font-size: 1.5em; line-height: 1.2; margin: 8px 0 4px; }
+  main { max-width: 640px; margin: 0 auto; padding: 12px 16px 48px; }
+  h1 { font-size: 1.45em; line-height: 1.2; margin: 6px 0 2px; }
   h2 { font-size: 1.2em; margin: 28px 0 10px; }
   p { margin: 0 0 12px; }
   .muted { color: var(--muted); }
@@ -52,25 +52,26 @@
   .screen.active { display: block; }
 
   /* Start-Kacheln */
-  .tiles { display: grid; gap: 14px; margin-top: 18px; }
+  .tiles { display: grid; gap: 12px; margin-top: 14px; }
   .tile {
-    display: flex; align-items: center; gap: 16px;
-    width: 100%; min-height: 88px; padding: 16px 18px;
+    display: flex; align-items: center; gap: 14px;
+    width: 100%; min-height: 76px; padding: 12px 16px;
     border: 3px solid var(--blue); border-radius: 16px;
     background: var(--card); color: var(--text);
-    font: inherit; font-size: 1.15em; font-weight: 700; text-align: left;
+    font: inherit; font-size: 1.1em; font-weight: 700; text-align: left;
     text-decoration: none; cursor: pointer;
   }
   .tile:active { background: var(--blue-soft); }
-  .tile .ico { font-size: 1.6em; width: 1.4em; text-align: center; flex: none; }
+  .tile .ico { font-size: 1.45em; width: 1.4em; text-align: center; flex: none; }
   .tile.notfall { border-color: var(--red); color: var(--red); background: var(--red-soft); }
-  .tile .sub { display: block; font-weight: 400; font-size: 0.75em; color: var(--muted); }
+  .tile.heute { border-color: var(--green); background: var(--green-soft); }
+  .tile .sub { display: block; font-weight: 400; font-size: 0.75em; color: var(--muted); line-height: 1.3; }
 
   /* Zurück */
   .back {
-    display: block; width: 100%; min-height: 64px; margin: 0 0 8px;
+    display: block; width: 100%; min-height: 60px; margin: 0 0 8px;
     border: 0; border-radius: 14px; background: var(--blue); color: #fff;
-    font: inherit; font-weight: 700; text-align: left; padding: 14px 18px; cursor: pointer;
+    font: inherit; font-weight: 700; text-align: left; padding: 12px 18px; cursor: pointer;
     position: sticky; top: calc(env(safe-area-inset-top) + 8px); z-index: 5;
     box-shadow: 0 0 0 8px var(--bg);
   }
@@ -87,7 +88,19 @@
   .big { font-size: 1.3em; font-weight: 700; line-height: 1.25; margin: 2px 0 8px; }
   .huge { font-size: 1.6em; font-weight: 800; line-height: 1.15; margin: 4px 0 10px; }
 
-  /* Anruf-Tasten */
+  /* Antippbare Hotel-Karte */
+  .tap { cursor: pointer; position: relative; }
+  .tap:active { background: var(--blue-soft); }
+  .mehr { color: var(--blue); font-weight: 700; font-size: 0.9em; margin: 6px 0 0; }
+
+  /* Tasten */
+  .nav {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center; column-gap: 10px;
+    width: 100%; min-height: 64px; margin-top: 12px; padding: 12px 16px;
+    border-radius: 14px; background: var(--blue); color: #fff;
+    font-weight: 700; text-decoration: none; text-align: center;
+  }
+  .nav:active { opacity: 0.85; }
   .call {
     display: flex; flex-wrap: wrap; align-items: center; justify-content: center; column-gap: 10px;
     width: 100%; min-height: 64px; margin-top: 10px; padding: 12px 16px;
@@ -97,6 +110,33 @@
   .call.rot { background: var(--red); }
   .call .nr { font-weight: 400; font-size: 0.9em; display: block; width: 100%; white-space: nowrap; }
   .call:active { opacity: 0.85; }
+  .call-klein {
+    display: inline-flex; align-items: center; gap: 8px;
+    min-height: 48px; margin-top: 10px; padding: 8px 14px;
+    border: 2px solid var(--green); border-radius: 12px; background: var(--card);
+    color: var(--green); font-weight: 700; font-size: 0.85em; text-decoration: none;
+  }
+  .call-klein:active { background: var(--green-soft); }
+
+  /* Zwei gleich große Aktions-Tasten */
+  .aktionen { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+  .aktionen.eins { grid-template-columns: 1fr; }
+  .aktion {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    min-height: 76px; padding: 8px; border-radius: 14px;
+    color: #fff; font-weight: 700; font-size: 0.95em; text-decoration: none; text-align: center;
+  }
+  .aktion .ai { font-size: 1.35em; line-height: 1.1; }
+  .aktion.maps { background: var(--blue); }
+  .aktion.tel { background: var(--green); }
+  .aktion:active { opacity: 0.85; }
+
+  /* Kopf der Hotel-Karte: Text links, Pfeil rechts */
+  .kopf { display: flex; align-items: center; gap: 10px; }
+  .kopf .text { flex: 1; min-width: 0; }
+  .kopf .pfeil { flex: none; font-size: 2em; line-height: 1; color: var(--blue); font-weight: 300; }
+  .hotelname { margin: 0; font-weight: 700; }
+  .karten-adresse { margin: 4px 0 0; color: var(--muted); font-size: 0.85em; line-height: 1.35; }
 
   /* Hotelliste */
   .tag { display: flex; gap: 12px; align-items: baseline; }
@@ -107,6 +147,8 @@
     display: inline-block; background: var(--green); color: #fff; border-radius: 999px;
     padding: 2px 12px; font-size: 0.8em; font-weight: 700; margin-bottom: 6px;
   }
+  .adresse { font-size: 1.05em; line-height: 1.4; margin: 4px 0 0; }
+  .telnr { white-space: nowrap; display: inline-block; margin-top: 10px; }
 
   dl { margin: 0; }
   dt { font-size: 0.85em; color: var(--muted); margin-top: 10px; }
@@ -117,7 +159,7 @@
   .names { columns: 2; column-gap: 20px; list-style: none; padding: 0; }
   .names li { break-inside: avoid; }
 
-  .schrift { display: flex; gap: 10px; margin-top: 28px; }
+  .schrift { display: flex; gap: 10px; margin-top: 6px; }
   .schrift button {
     flex: 1; min-height: 56px; border-radius: 12px; border: 2px solid var(--blue);
     background: var(--card); color: var(--blue); font: inherit; font-weight: 700; cursor: pointer;
@@ -134,26 +176,24 @@
 <!-- ============ START ============ -->
 <section id="start" class="screen active">
   <h1>Indien-Reise</h1>
-  <p class="muted">Rajasthan · 21.11. bis 11.12.2026</p>
-
-  <div id="start-heute"></div>
+  <p class="muted" style="margin:0">Rajasthan · 21.11. bis 11.12.2026</p>
 
   <div class="tiles">
-    <button class="tile" data-go="heute"><span class="ico">📅</span><span>Heute<span class="sub">Wo bin ich, welches Hotel?</span></span></button>
-    <button class="tile notfall" data-go="notfall"><span class="ico">☎️</span><span>Notfall &amp; Telefon<span class="sub">Reiseleitung anrufen</span></span></button>
+    <button class="tile heute" data-go="heute"><span class="ico">📅</span><span>Heute<span class="sub" id="heute-sub">Wo bin ich, welches Hotel?</span></span></button>
     <button class="tile" data-go="hotels"><span class="ico">🏨</span><span>Alle Hotels<span class="sub">Reiseroute Tag für Tag</span></span></button>
     <button class="tile" data-go="fluege"><span class="ico">✈️</span><span>Flüge<span class="sub">Hinflug und Rückflug</span></span></button>
+    <button class="tile notfall" data-go="notfall"><span class="ico">☎️</span><span>Notfall &amp; Telefon<span class="sub">Reiseleitung anrufen</span></span></button>
     <button class="tile" data-go="gruppe"><span class="ico">👥</span><span>Gruppe<span class="sub">Reiseleiter und Mitreisende</span></span></button>
     <button class="tile" data-go="infos"><span class="ico">ℹ️</span><span>Wichtige Hinweise<span class="sub">Regeln, Gepäck, Krankheit</span></span></button>
   </div>
 
   <p class="label" style="margin-top:28px">Schriftgröße</p>
-  <div class="schrift" style="margin-top:6px">
+  <div class="schrift">
     <button data-size="normal">A</button>
     <button data-size="gross" style="font-size:1.2em">A</button>
     <button data-size="sehrgross" style="font-size:1.45em">A</button>
   </div>
-  <p class="small muted" style="margin-top:20px">Funktioniert ohne Internet. Stand der Reiseunterlagen: 31.10.2026 (Wikinger Reisen, Reise 3310, Vorgang 1160860).</p>
+  <p class="small muted" style="margin-top:20px">Funktioniert ohne Internet. Nur die Navigation mit Google Maps braucht Internet oder eine vorher geladene Offline-Karte. Stand der Reiseunterlagen: 31.10.2026 (Wikinger Reisen, Reise 3310, Vorgang 1160860).</p>
 </section>
 
 <!-- ============ HEUTE ============ -->
@@ -161,6 +201,66 @@
   <button class="back" data-go="start">◀ Zurück zur Übersicht</button>
   <h1>Heute</h1>
   <div id="heute-inhalt"></div>
+</section>
+
+<!-- ============ HOTELS ============ -->
+<section id="hotels" class="screen">
+  <button class="back" data-go="start">◀ Zurück zur Übersicht</button>
+  <h1>Alle Hotels</h1>
+  <p class="small muted">Auf ein Hotel tippen für Adresse und Tagesprogramm. Vorläufige Liste – Änderungen sind möglich.</p>
+  <div id="hotel-liste"></div>
+</section>
+
+<!-- ============ HOTEL-INFO ============ -->
+<section id="hotel" class="screen">
+  <button class="back" data-back="1">◀ Zurück</button>
+  <div id="hotel-inhalt"></div>
+</section>
+
+<!-- ============ FLÜGE ============ -->
+<section id="fluege" class="screen">
+  <button class="back" data-go="start">◀ Zurück zur Übersicht</button>
+  <h1>Flüge</h1>
+
+  <div class="card">
+    <p class="label">Buchungsnummer (für Check-in)</p>
+    <p class="huge" style="letter-spacing:0.08em">YLYYSQ</p>
+    <p class="small muted" style="margin:0">Lufthansa · Passagier: Christof Bonn · Gepäck: 1 Koffer, 23 kg</p>
+  </div>
+
+  <div class="card">
+    <h3>Hinflug · Samstag, 21.11.2026</h3>
+    <p class="big">LH 760</p>
+    <dl>
+      <dt>Ab Frankfurt</dt><dd>13:20 Uhr</dd>
+      <dt>An Delhi</dt><dd>01:35 Uhr (Sonntag, 22.11., Ortszeit)</dd>
+    </dl>
+    <p class="small" style="margin:12px 0 0">Mit dem Zug zum Flughafen: Bahnticket (Rail&amp;Fly) rechtzeitig einlösen. 3 Stunden vor Abflug am Check-in sein.</p>
+  </div>
+
+  <div class="card hinweis">
+    <h3>Nach der Landung in Delhi</h3>
+    <p>Zum <b>Ausgang</b> gehen. Dort wartet ein Mitarbeiter mit einem Schild <b>„Wikinger Reisen“</b>.</p>
+    <p style="margin:0">Falls Sie sich verpassen: Treffpunkt ist am Ankunftstag gegen <b>09:30 Uhr</b> im Hotel Regent Grand.</p>
+  </div>
+
+  <div class="card">
+    <h3>Rückflug · Freitag, 11.12.2026</h3>
+    <p class="big">LH 761</p>
+    <dl>
+      <dt>Ab Delhi</dt><dd>03:35 Uhr nachts</dd>
+      <dt>An Frankfurt</dt><dd>07:55 Uhr</dd>
+    </dl>
+    <p class="small" style="margin:12px 0 0">Der Abflug ist in der <b>Nacht von Donnerstag auf Freitag</b>. Kurz nach Mitternacht geht der Transfer zum Flughafen. Am Donnerstag gibt es dafür ein Tageszimmer in Delhi.</p>
+  </div>
+
+  <div class="card hinweis">
+    <h3>Wichtig für den Rückflug</h3>
+    <p>In Indien darf man das Flughafengebäude <b>nur mit Bordkarte</b> betreten. Deshalb vorher <b>online einchecken</b>. Die Reiseleitung hilft dabei.</p>
+    <p style="margin:0">Beim Online-Check-in die eigene E-Mail-Adresse angeben, sonst kommt die Bordkarte nicht an.</p>
+  </div>
+
+  <p class="small muted">Alle Uhrzeiten sind Ortszeiten. Flugzeit am Tag vorher bei der Lufthansa prüfen.</p>
 </section>
 
 <!-- ============ NOTFALL ============ -->
@@ -177,7 +277,7 @@
   <div class="card">
     <h3>Partner vor Ort (Terra World, Notfall)</h3>
     <a class="call rot" href="tel:+919811173769">📞 Notfall Indien anrufen<span class="nr">+91 98111 73769</span></a>
-    <p class="small muted" style="margin-top:10px">Büro Terra World, New Delhi: <a href="tel:+911126125550">+91 11 2612 5550</a></p>
+    <p class="small muted" style="margin:10px 0 0">Büro Terra World, New Delhi: <a href="tel:+911126125550">+91 11 2612 5550</a></p>
   </div>
 
   <h2>In Deutschland</h2>
@@ -203,67 +303,13 @@
   </div>
 </section>
 
-<!-- ============ HOTELS ============ -->
-<section id="hotels" class="screen">
-  <button class="back" data-go="start">◀ Zurück zur Übersicht</button>
-  <h1>Alle Hotels</h1>
-  <p class="small muted">Vorläufige Liste – kurzfristige Änderungen sind möglich.</p>
-  <div id="hotel-liste"></div>
-</section>
-
-<!-- ============ FLÜGE ============ -->
-<section id="fluege" class="screen">
-  <button class="back" data-go="start">◀ Zurück zur Übersicht</button>
-  <h1>Flüge</h1>
-
-  <div class="card">
-    <p class="label">Buchungsnummer (für Check-in)</p>
-    <p class="huge" style="letter-spacing:0.08em">YLYYSQ</p>
-    <p class="small muted">Lufthansa · Passagier: Christof Bonn · Gepäck: 1 Koffer, 23 kg</p>
-  </div>
-
-  <div class="card">
-    <h3>Hinflug · Samstag, 21.11.2026</h3>
-    <p class="big">LH 760</p>
-    <dl>
-      <dt>Ab Frankfurt</dt><dd>13:20 Uhr</dd>
-      <dt>An Delhi</dt><dd>01:35 Uhr (Sonntag, 22.11., Ortszeit)</dd>
-    </dl>
-    <p class="small" style="margin-top:12px">Mit dem Zug zum Flughafen: Bahnticket (Rail&amp;Fly) rechtzeitig einlösen. 3 Stunden vor Abflug am Check-in sein.</p>
-  </div>
-
-  <div class="card hinweis">
-    <h3>Nach der Landung in Delhi</h3>
-    <p>Zum <b>Ausgang</b> gehen. Dort wartet ein Mitarbeiter mit einem Schild <b>„Wikinger Reisen“</b>.</p>
-    <p style="margin:0">Falls Sie sich verpassen: Treffpunkt ist am Ankunftstag gegen <b>09:30 Uhr</b> im Hotel Regent Grand.</p>
-  </div>
-
-  <div class="card">
-    <h3>Rückflug · Freitag, 11.12.2026</h3>
-    <p class="big">LH 761</p>
-    <dl>
-      <dt>Ab Delhi</dt><dd>03:35 Uhr nachts</dd>
-      <dt>An Frankfurt</dt><dd>07:55 Uhr</dd>
-    </dl>
-    <p class="small" style="margin-top:12px">Der Abflug ist in der <b>Nacht von Donnerstag auf Freitag</b>. Am Donnerstag gibt es dafür ein Tageszimmer in Delhi.</p>
-  </div>
-
-  <div class="card hinweis">
-    <h3>Wichtig für den Rückflug</h3>
-    <p>In Indien darf man das Flughafengebäude <b>nur mit Bordkarte</b> betreten. Deshalb vorher <b>online einchecken</b>. Die Reiseleitung hilft dabei.</p>
-    <p style="margin:0">Beim Online-Check-in die eigene E-Mail-Adresse angeben, sonst kommt die Bordkarte nicht an.</p>
-  </div>
-
-  <p class="small muted">Alle Uhrzeiten sind Ortszeiten. Flugzeit am Tag vorher bei der Lufthansa prüfen.</p>
-</section>
-
 <!-- ============ GRUPPE ============ -->
 <section id="gruppe" class="screen">
   <button class="back" data-go="start">◀ Zurück zur Übersicht</button>
   <h1>Gruppe</h1>
 
   <div class="card">
-    <p class="label">Reiseleiter</p>
+    <p class="label">Reiseleiter (spricht Deutsch)</p>
     <p class="big">Suraj Prakash Shukla</p>
     <a class="call" href="tel:+919811682460">📞 Anrufen<span class="nr">+91 98116 82460</span></a>
   </div>
@@ -271,7 +317,7 @@
   <div class="card">
     <p class="label">Zimmer geteilt mit</p>
     <p class="big">Arndt P.</p>
-    <p class="small muted" style="margin:0">Zweibettzimmer, unterwegs auch im Zelt.</p>
+    <p class="small muted" style="margin:0">Zweibettzimmer, bei der Kamelsafari Zweipersonenzelt.</p>
   </div>
 
   <div class="card">
@@ -309,6 +355,15 @@
   </div>
 
   <div class="card">
+    <h3>Kamelsafari (Tag 4 bis 6)</h3>
+    <ul>
+      <li>Jeder bekommt ein eigenes Reitkamel. Reiterfahrung ist nicht nötig.</li>
+      <li>Pro Tag 3 bis 6 Stunden reiten oder wandern.</li>
+      <li>Zwei Nächte im Zweipersonenzelt. <b>Im Camp gibt es keine Toiletten oder Duschen.</b></li>
+    </ul>
+  </div>
+
+  <div class="card">
     <h3>Krank unterwegs</h3>
     <ul>
       <li>Arzt und Medikamente muss man meist <b>sofort selbst bezahlen</b>. Kreditkarte mitnehmen.</li>
@@ -340,10 +395,8 @@
   </div>
 
   <div class="card">
-    <h3>Adresse des ersten Hotels (für Taxi)</h3>
-    <p class="big" style="margin-bottom:4px">Hotel Regent Grand</p>
-    <p style="margin:0">2/6 East Patel Nagar, Pusa Road<br>Karol Bagh, New Delhi</p>
-    <a class="call" href="tel:+911146011111">📞 Hotel anrufen<span class="nr">+91 11 4601 1111</span></a>
+    <h3>Google Maps ohne Internet</h3>
+    <p style="margin:0">Die Navigations-Tasten öffnen Google Maps. Ohne Internet klappt das nur, wenn vor der Reise in der Google-Maps-App eine <b>Offline-Karte</b> für Rajasthan und Delhi geladen wurde.</p>
   </div>
 </section>
 
@@ -351,30 +404,95 @@
 
 <script>
 (function () {
-  // ---------- Reisedaten (aus der Hotelliste von Wikinger Reisen) ----------
-  // Datum = Tag der Ankunft / Übernachtung
+  // ---------- Reisedaten ----------
+  // Hotels und Telefonnummern: Hotelliste von Wikinger Reisen (Stand 31.10.2026).
+  // Adressen: aus Hotel- und Buchungsportalen recherchiert.
+  // Tagesprogramm: Reisebeschreibung auf wikinger-reisen.de (Reise 3310), zusammengefasst.
+  var HOTELS = {
+    regent: { name: "Hotel Regent Grand", ort: "Delhi", tel: "+911146011111",
+      adresse: "2/6 East Patel Nagar, Pusa Road\nKarol Bagh, New Delhi 110008",
+      maps: "Hotel Regent Grand, East Patel Nagar, New Delhi",
+      info: "Im Stadtteil Karol Bagh, gegenüber Metro-Pfeiler Nr. 167, wenige Minuten zu Fuß von der Metrostation Rajendra Place." },
+    jagat: { name: "Jagat Palace", ort: "Pushkar", tel: "+911452772001",
+      adresse: "Ajmer Road, behind Ramdwara\nPushkar 305022",
+      maps: "Jagat Palace Hotel, Pushkar",
+      info: "Palastartiges Hotel, geführt von einer alten Rajputen-Familie aus Khanpur." },
+    zelt1: { name: "Zeltcamp", ort: "Chimana", tel: "+919828377066", zelt: true,
+      info: "Übernachtung im Zweipersonenzelt in der Wüste Thar. Im Camp gibt es keine Toiletten oder Duschen." },
+    zelt2: { name: "Zeltcamp", ort: "Bharadiya", tel: "+919828377066", zelt: true,
+      info: "Übernachtung im Zweipersonenzelt in der Wüste Thar. Im Camp gibt es keine Toiletten oder Duschen." },
+    tulip: { name: "Desert Tulip", ort: "Jaisalmer", tel: "+919001083081",
+      adresse: "4, Hotel Complex, Jodhpur Road (NH 15)\nJaisalmer 345001",
+      maps: "Hotel Desert Tulip, Jodhpur Road, Jaisalmer",
+      info: "Etwa 2,5 km vom Fort Jaisalmer und 2 km vom Bahnhof entfernt." },
+    shreeram: { name: "Shree Ram International", ort: "Jodhpur", tel: "+912912671100",
+      adresse: "Residency Road, near Paanch Batti Circle\nJodhpur 342001",
+      maps: "Hotel Shree Ram International, Residency Road, Jodhpur",
+      info: "An der Residency Road, wenige Kilometer vom Umaid-Bhawan-Palast." },
+    kumbhal: { name: "Kumbhalgarh Forest Retreat", ort: "Kumbhalgarh", tel: "+919680355725",
+      adresse: "Village Beed Ki Bhagal, Kumbhalgarh\nDistrict Rajsamand 313325",
+      maps: "Kumbhalgarh Forest Retreat",
+      info: "Ruhig im Grünen gelegen, etwa 5 Autominuten vom Fort Kumbhalgarh." },
+    ranakpur: { name: "Ranakpur Hill Resort", ort: "Ranakpur", tel: "+919057757775",
+      adresse: "Ranakpur Road, Sadri\nDistrict Pali 306702",
+      maps: "Ranakpur Hill Resort, Ranakpur Road, Sadri",
+      info: "Ganz in der Nähe des berühmten Jain-Tempels von Ranakpur." },
+    hilltop: { name: "Hilltop Palace", ort: "Udaipur", tel: "+912942432245",
+      adresse: "5 Ambavgarh, Fatehsagar\nUdaipur 313001",
+      maps: "Hotel Hilltop Palace, Ambavgarh, Udaipur",
+      info: "Auf dem Ambavgarh-Hügel mit Blick auf den Fateh-Sagar-See. Dachrestaurant und Schwimmbad." },
+    bijaipur: { name: "Castle Bijaipur", ort: "Bijaipur", tel: "+919509963925",
+      adresse: "Village/Post Bijaipur, via Bassi\nChittorgarh 312001",
+      maps: "Castle Bijaipur, Chittorgarh",
+      info: "Historische Burg auf dem Land, als Hotel hergerichtet." },
+    hadoti: { name: "Hadoti Palace", ort: "Bundi", tel: "+919667511111",
+      adresse: "Kota Road, opp. Collectorate\nnear Ranjit Talkies, Bundi 323001",
+      maps: "The Hadoti Palace, Kota Road, Bundi",
+      info: "Im Zentrum von Bundi, gegenüber dem Collectorate, nahe dem Busbahnhof." },
+    tiger: { name: "Tiger Den Resort", ort: "Sawai Madhopur", tel: "+917462252070",
+      adresse: "Village Khilchipur, Ranthambore Road\nSawai Madhopur 322001",
+      maps: "Tiger Den Resort, Khilchipur, Ranthambore",
+      info: "Resort etwa 7 km vom Ranthambore-Nationalpark entfernt." },
+    parkprime: { name: "Park Prime", ort: "Jaipur", tel: "+911412360202",
+      adresse: "C-59 Prithviraj Road, C-Scheme\nJaipur 302001",
+      maps: "Park Prime Hotel, Prithviraj Road, C-Scheme, Jaipur",
+      info: "Zentral im Viertel C-Scheme, nahe Central Park." },
+    udaivilas: { name: "Udai Vilas Palace", ort: "Bharatpur", tel: "+915644233161",
+      adresse: "NH 11, Fatehpur Sikri Road\nBharatpur 321001",
+      maps: "Udai Vilas Palace, Fatehpur Sikri Road, Bharatpur",
+      info: "An der Straße nach Fatehpur Sikri, nicht weit vom Vogelschutzgebiet." },
+    goldentulip: { name: "Golden Tulip", ort: "Agra", tel: "+917454802181",
+      adresse: "Fatehabad Road, opp. Hotel Jaypee Palace\nAgra 282003",
+      maps: "Golden Tulip Agra, Fatehabad Road",
+      info: "Früher „Hotel Royale Regent“. Etwa 2 km vom Taj Mahal entfernt." },
+    deemarks: { name: "Dee Marks (Tageszimmer)", ort: "Delhi", tel: "+919311325493",
+      adresse: "NH-8, Rangpuri, near Shiv Murti\nNew Delhi 110037",
+      maps: "Dee Marks Hotel & Resorts, NH-8, Rangpuri, New Delhi",
+      info: "Nahe dem Flughafen Delhi. Nur Tageszimmer zum Frischmachen vor dem Rückflug." }
+  };
+
   var TAGE = [
-    { t: 1,  d: "2026-11-21", hotel: "Hotel Regent Grand", ort: "Delhi", tel: "+911146011111" , notiz: "Abflug Frankfurt 13:20 Uhr, Landung in Delhi nachts um 01:35 Uhr." },
-    { t: 2,  d: "2026-11-22", hotel: "Hotel Regent Grand", ort: "Delhi", tel: "+911146011111" },
-    { t: 3,  d: "2026-11-23", hotel: "Jagat Palace", ort: "Pushkar", tel: "+911452772001" },
-    { t: 4,  d: "2026-11-24", hotel: "Zeltübernachtung", ort: "Chimana", tel: "+919828377066", notiz: "Kamelsafari – Übernachtung im Zelt." },
-    { t: 5,  d: "2026-11-25", hotel: "Zeltübernachtung", ort: "Bharadiya", tel: "+919828377066", notiz: "Kamelsafari – Übernachtung im Zelt." },
-    { t: 6,  d: "2026-11-26", hotel: "Desert Tulip", ort: "Jaisalmer", tel: "+919001083081" },
-    { t: 7,  d: "2026-11-27", hotel: "Desert Tulip", ort: "Jaisalmer", tel: "+919001083081" },
-    { t: 8,  d: "2026-11-28", hotel: "Shree Ram International", ort: "Jodhpur", tel: "+912912671100" },
-    { t: 9,  d: "2026-11-29", hotel: "Kumbhalgarh Forest Retreat", ort: "Kumbhalgarh", tel: "+919680355725" },
-    { t: 10, d: "2026-11-30", hotel: "Ranakpur Hill Resort", ort: "Ranakpur", tel: "+919057757775" },
-    { t: 11, d: "2026-12-01", hotel: "Hilltop Palace", ort: "Udaipur", tel: "+912942432245" },
-    { t: 12, d: "2026-12-02", hotel: "Hilltop Palace", ort: "Udaipur", tel: "+912942432245" },
-    { t: 13, d: "2026-12-03", hotel: "Castle Bijaipur", ort: "Bijaipur", tel: "+919509963925" },
-    { t: 14, d: "2026-12-04", hotel: "Hadoti Palace", ort: "Bundi", tel: "+919667511111" },
-    { t: 15, d: "2026-12-05", hotel: "Tiger Den Resort", ort: "Sawai Madhopur", tel: "+917462252070" },
-    { t: 16, d: "2026-12-06", hotel: "Park Prime", ort: "Jaipur", tel: "+911412360202" },
-    { t: 17, d: "2026-12-07", hotel: "Park Prime", ort: "Jaipur", tel: "+911412360202" },
-    { t: 18, d: "2026-12-08", hotel: "Udai Vilas Palace", ort: "Bharatpur", tel: "+915644233161" },
-    { t: 19, d: "2026-12-09", hotel: "Golden Tulip", ort: "Agra", tel: "+917454802181" },
-    { t: 20, d: "2026-12-10", hotel: "Dee Mark's (Tageszimmer)", ort: "Delhi", tel: "+919311325493", notiz: "Nur Tageszimmer. Rückflug LH 761 in der Nacht um 03:35 Uhr – online einchecken!" },
-    { t: 21, d: "2026-12-11", hotel: null, ort: "Heimflug", tel: null, notiz: "Rückflug LH 761: ab Delhi 03:35 Uhr, an Frankfurt 07:55 Uhr." }
+    { t: 1,  d: "2026-11-21", h: "regent",  prog: "Flug Frankfurt – Delhi (LH 760, ab 13:20 Uhr). Landung in der Nacht um 01:35 Uhr, Transfer ins Hotel." },
+    { t: 2,  d: "2026-11-22", h: "regent",  prog: "Stadtrundfahrt durch Delhi." },
+    { t: 3,  d: "2026-11-23", h: "jagat",   prog: "Früh mit dem Zug nach Ajmer (ca. 6–7 Std.), dann 30 Min. nach Pushkar. Nachmittags Brahma-Tempel, heiliger See, Ghats und Märkte – zur Zeit des Pushkar-Fests." },
+    { t: 4,  d: "2026-11-24", h: "zelt1",   prog: "Fahrt nach Nokha (190 km). Beginn der Kamelsafari durch die Wüste Thar, 3–6 Std. reiten oder wandern. Mittag- und Abendessen inklusive." },
+    { t: 5,  d: "2026-11-25", h: "zelt2",   prog: "Kamelsafari durch das Land der Bishnoi, 3–6 Std. reiten oder wandern. Mittag- und Abendessen inklusive." },
+    { t: 6,  d: "2026-11-26", h: "tulip",   prog: "Letzte Etappe nach Jamba (ca. 2 Std.), dann Fahrt nach Jaisalmer (180 km)." },
+    { t: 7,  d: "2026-11-27", h: "tulip",   prog: "Stadtbesichtigung Jaisalmer mit dem Fort aus dem Jahr 1156. Nachmittags freie Zeit." },
+    { t: 8,  d: "2026-11-28", h: "shreeram", prog: "Fahrt nach Jodhpur (265 km). Mehrangarh-Fort, Paläste und Märkte." },
+    { t: 9,  d: "2026-11-29", h: "kumbhal", prog: "Fahrt (175 km) zum Fort Kumbhalgarh. Wanderung durch Dörfer (ca. 3 Std.)." },
+    { t: 10, d: "2026-11-30", h: "ranakpur", prog: "Wanderung durch das Wildreservat nach Bagha Ka Bagh mit Picknick (4–5 Std., vor allem bergab). Besuch des Jain-Tempels von Ranakpur." },
+    { t: 11, d: "2026-12-01", h: "hilltop", prog: "Fahrt nach Udaipur (90 km). Stadtpalast, Jagdish-Tempel und Basare." },
+    { t: 12, d: "2026-12-02", h: "hilltop", prog: "Radtour ins Umland zu Bauernhöfen (4–5 Std.). Nachmittags freie Zeit." },
+    { t: 13, d: "2026-12-03", h: "bijaipur", prog: "Wanderung zum Kamleshwar-Tempel (ca. 4 Std.). Fahrt nach Bijaipur mit Halt an der Festung Chittorgarh." },
+    { t: 14, d: "2026-12-04", h: "hadoti",  prog: "Rundweg um die Burg Bijaipur (ca. 2 Std.). Fahrt nach Bundi mit Besuch der Taragarh-Festung." },
+    { t: 15, d: "2026-12-05", h: "tiger",   prog: "Fahrt nach Sawai Madhopur (130 km). Nachmittags 3 Std. Safari im offenen Wagen im Ranthambore-Nationalpark – mit etwas Glück Tiger." },
+    { t: 16, d: "2026-12-06", h: "parkprime", prog: "Wanderung zum Ranthambore-Fort (2–3 Std.). Fahrt nach Jaipur (175 km), Marktbesuch mit der Fahrrad-Rikscha." },
+    { t: 17, d: "2026-12-07", h: "parkprime", prog: "Jaipur: Palast der Winde, Stadtpalast, Sternwarte und Amber-Fort." },
+    { t: 18, d: "2026-12-08", h: "udaivilas", prog: "Fahrt nach Bharatpur (185 km). Mit dem Fahrrad durch das Vogelschutzgebiet (ca. 2 Std.)." },
+    { t: 19, d: "2026-12-09", h: "goldentulip", prog: "Fahrt nach Agra (55 km). Rotes Fort und Taj Mahal." },
+    { t: 20, d: "2026-12-10", h: "deemarks", prog: "Wer möchte: Taj Mahal bei Sonnenaufgang. Fahrt nach Delhi (210 km) mit Halt in Sikandra. Tageszimmer zum Frischmachen. Kurz nach Mitternacht Transfer zum Flughafen – vorher online einchecken!" },
+    { t: 21, d: "2026-12-11", h: null, ort: "Heimflug", prog: "Rückflug LH 761: ab Delhi 03:35 Uhr, an Frankfurt 07:55 Uhr." }
   ];
   var WOCHENTAG = ["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"];
   var MONAT = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
@@ -389,14 +507,19 @@
   function tageZwischen(a, b) { return Math.round((b - a) / 86400000); }
   function langesDatum(dt) { return WOCHENTAG[dt.getDay()] + ", " + dt.getDate() + ". " + MONAT[dt.getMonth()]; }
   function kurzDatum(dt) { return WOCHENTAG[dt.getDay()].slice(0, 2) + " " + ("0" + dt.getDate()).slice(-2) + "." + ("0" + (dt.getMonth() + 1)).slice(-2) + "."; }
-  function telAnzeige(t) {
-    // +91 und 10 Ziffern in zwei gut lesbaren 5er-Gruppen
-    var r = t.replace("+91", "");
-    return "+91 " + r.slice(0, 5) + " " + r.slice(5);
-  }
+  function telAnzeige(t) { var r = t.replace("+91", ""); return "+91 " + r.slice(0, 5) + " " + r.slice(5); }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
-  function anruf(tel, text) {
-    return '<a class="call" href="tel:' + tel + '">📞 ' + esc(text) + '<span class="nr">' + telAnzeige(tel) + '</span></a>';
+  function ortVon(tag) { return tag.h ? HOTELS[tag.h].ort : tag.ort; }
+
+  // Zwei gleich große Tasten: Google Maps und Anrufen
+  function aktionen(hotel) {
+    var html = "";
+    if (hotel.maps) {
+      var url = "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(hotel.maps);
+      html += '<a class="aktion maps" href="' + url + '" target="_blank" rel="noopener"><span class="ai">🧭</span>Hinfahren</a>';
+    }
+    html += '<a class="aktion tel" href="tel:' + hotel.tel + '"><span class="ai">📞</span>Anrufen</a>';
+    return '<div class="aktionen' + (hotel.maps ? '' : ' eins') + '">' + html + '</div>';
   }
 
   function aktuellerIndex() {
@@ -405,24 +528,71 @@
     return -1;
   }
 
-  function tagKarte(tag, klasse) {
-    var dt = parse(tag.d);
-    var html = '<div class="card ' + (klasse || "") + '">';
-    html += '<p class="label">Tag ' + tag.t + ' von 21 · ' + langesDatum(dt) + '</p>';
-    html += '<p class="huge">' + esc(tag.ort) + '</p>';
-    if (tag.hotel) html += '<p class="label">Übernachtung</p><p class="big">' + esc(tag.hotel) + '</p>';
-    if (tag.notiz) html += '<p>' + esc(tag.notiz) + '</p>';
-    if (tag.tel) html += anruf(tag.tel, "Hotel anrufen");
+  // Kurze, antippbare Hotel-Karte (für Heute und die Hotelliste)
+  function hotelKarte(tag, klasse, mitDatumZeile, id) {
+    var hotel = tag.h ? HOTELS[tag.h] : null;
+    var html = '<div class="card ' + (klasse || "") + (hotel ? ' tap" data-tag="' + tag.t + '"' : '"') + (id ? ' id="' + id + '"' : '') + '>';
+    html += '<div class="kopf"><div class="text">';
+    html += mitDatumZeile || "";
+    html += '<p class="big" style="margin:4px 0 2px">' + esc(ortVon(tag)) + '</p>';
+    if (hotel) {
+      html += '<p class="hotelname">' + esc(hotel.zelt ? "Zeltübernachtung" : hotel.name) + '</p>';
+      if (hotel.adresse) html += '<p class="karten-adresse">' + esc(hotel.adresse).replace(/\n/g, "<br>") + '</p>';
+    }
+    html += '</div>' + (hotel ? '<span class="pfeil" aria-hidden="true">›</span>' : '') + '</div>';
+    if (hotel) {
+      html += aktionen(hotel);
+    } else {
+      html += '<p style="margin:8px 0 0">' + esc(tag.prog) + '</p>';
+    }
     return html + "</div>";
   }
 
+  // ---------- Hotel-Infoseite ----------
+  function renderHotel(t) {
+    var tag = TAGE[t - 1];
+    if (!tag || !tag.h) return false;
+    var hotel = HOTELS[tag.h];
+    // alle Nächte in diesem Hotel
+    var naechte = TAGE.filter(function (x) { return x.h === tag.h; });
+    var html = '<p class="label">Tag ' + tag.t + ' von 21 · ' + langesDatum(parse(tag.d)) + '</p>';
+    html += '<h1>' + esc(hotel.zelt ? "Zeltcamp " + hotel.ort : hotel.name) + '</h1>';
+    html += '<p class="big muted" style="font-weight:400">' + esc(hotel.ort) + '</p>';
+    if (naechte.length > 1) {
+      html += '<p><b>' + naechte.length + ' Nächte:</b> ' + naechte.map(function (x) { return kurzDatum(parse(x.d)); }).join(" und ") + '</p>';
+    }
+
+    if (hotel.adresse) {
+      html += '<div class="card"><p class="label">Adresse (zum Zeigen für Taxi oder Rikscha)</p>';
+      html += '<p class="adresse"><b>' + esc(hotel.name.replace(" (Tageszimmer)", "")) + '</b><br>' + esc(hotel.adresse).replace(/\n/g, "<br>") + '</p>';
+      html += aktionen(hotel);
+      html += '<p class="small muted" style="margin:8px 0 0">Telefon: <span class="telnr" style="margin:0">' + telAnzeige(hotel.tel) + '</span></p>';
+      html += '</div>';
+    } else {
+      html += '<div class="card hinweis"><p style="margin:0">Das Camp liegt in der Wüste und hat keine Adresse. Die Gruppe reist gemeinsam mit den Kameltreibern dorthin.</p>';
+      html += aktionen(hotel);
+      html += '<p class="small muted" style="margin:8px 0 0">Telefon: <span class="telnr" style="margin:0">' + telAnzeige(hotel.tel) + '</span></p></div>';
+    }
+
+    if (hotel.info) html += '<div class="card"><h3>Über die Unterkunft</h3><p style="margin:0">' + esc(hotel.info) + '</p></div>';
+
+    html += '<h2>Programm</h2>';
+    naechte.forEach(function (x) {
+      html += '<div class="card' + (x.t === tag.t ? '' : '') + '"><p class="label">Tag ' + x.t + ' · ' + langesDatum(parse(x.d)) + '</p><p style="margin:4px 0 0">' + esc(x.prog) + '</p></div>';
+    });
+    html += '<p class="small muted">Programm laut Reisebeschreibung von Wikinger Reisen. Die Reiseleitung kann den Ablauf vor Ort ändern.</p>';
+
+    document.getElementById("hotel-inhalt").innerHTML = html;
+    return true;
+  }
+
+  // ---------- Uhr ----------
   function uhrHtml() {
     return '<div class="uhr"><div><p class="label">Uhrzeit hier</p><p class="zeit" id="uhr-hier">–</p></div>' +
            '<div><p class="label">In Deutschland</p><p class="zeit" id="uhr-de">–</p></div></div>';
   }
   function uhrStellen() {
-    var n = new Date();
-    var opt = { hour: "2-digit", minute: "2-digit" };
+    var n = new Date(), opt = { hour: "2-digit", minute: "2-digit" };
     var hier = document.getElementById("uhr-hier"), de = document.getElementById("uhr-de");
     if (hier) hier.textContent = n.toLocaleTimeString("de-DE", opt);
     if (de) {
@@ -431,72 +601,94 @@
     }
   }
 
+  // ---------- Heute ----------
   function renderHeute() {
     var h = heuteDatum();
     var start = parse(TAGE[0].d), ende = parse(TAGE[TAGE.length - 1].d);
     var i = aktuellerIndex();
     var html = '<p class="big">' + langesDatum(h) + '</p>';
-    var kurz = "";
+    var sub = "Wo bin ich, welches Hotel?";
 
     if (h < start) {
       var n = tageZwischen(h, start);
       html += '<div class="card heute"><p class="huge">Noch ' + n + (n === 1 ? ' Tag' : ' Tage') + '</p>' +
               '<p>Abflug am <b>Samstag, 21. November</b> um <b>13:20 Uhr</b> in Frankfurt (LH 760).</p>' +
               '<p style="margin:0">3 Stunden vorher am Check-in sein.</p></div>';
-      kurz = '<div class="card heute"><p class="label">Reisebeginn</p><p class="big">Noch ' + n + (n === 1 ? ' Tag' : ' Tage') + ' bis zum Abflug</p></div>';
+      sub = "Noch " + n + (n === 1 ? " Tag" : " Tage") + " bis zum Abflug";
     } else if (h > ende) {
       html += '<div class="card heute"><p class="huge">Willkommen zurück!</p><p style="margin:0">Die Reise ist vorbei.</p></div>';
+      sub = "Die Reise ist vorbei";
     } else if (i >= 0) {
       var tag = TAGE[i];
-      html += tagKarte(tag, "heute");
+      html += hotelKarte(tag, "heute", '<p class="label">Tag ' + tag.t + ' von 21 · Heute übernachten in</p>');
+      html += '<div class="card"><h3>Programm heute</h3><p style="margin:0">' + esc(tag.prog) + '</p></div>';
       if (i + 1 < TAGE.length) {
         var morgen = TAGE[i + 1];
         html += '<h2>Morgen</h2>';
-        html += '<div class="card"><p class="label">' + langesDatum(parse(morgen.d)) + '</p><p class="big">' + esc(morgen.ort) + '</p>' +
-                (morgen.hotel ? '<p style="margin:0">' + esc(morgen.hotel) + '</p>' : '') +
-                (morgen.notiz ? '<p style="margin:8px 0 0">' + esc(morgen.notiz) + '</p>' : '') + '</div>';
+        html += '<div class="card' + (morgen.h ? ' tap" data-tag="' + morgen.t + '"' : '"') + '><p class="label">' + langesDatum(parse(morgen.d)) + '</p><p class="big">' + esc(ortVon(morgen)) + '</p>' +
+                (morgen.h ? '<p style="margin:0">' + esc(HOTELS[morgen.h].zelt ? "Zeltübernachtung" : HOTELS[morgen.h].name) + '</p>' : '') +
+                '<p style="margin:8px 0 0">' + esc(morgen.prog) + '</p></div>';
       }
-      kurz = '<div class="card heute"><p class="label">Heute · Tag ' + tag.t + ' von 21</p><p class="big" style="margin-bottom:2px">' +
-             esc(tag.ort) + '</p>' + (tag.hotel ? '<p style="margin:0">' + esc(tag.hotel) + '</p>' : '') + '</div>';
+      sub = "Tag " + tag.t + ": " + ortVon(tag) + (tag.h ? " · " + (HOTELS[tag.h].zelt ? "Zelt" : HOTELS[tag.h].name) : "");
     }
     html += uhrHtml();
     html += '<a class="call rot" style="margin-top:20px" href="tel:+919811682460">📞 Reiseleitung anrufen<span class="nr">+91 98116 82460</span></a>';
 
     document.getElementById("heute-inhalt").innerHTML = html;
-    document.getElementById("start-heute").innerHTML = kurz;
+    document.getElementById("heute-sub").textContent = sub;
     uhrStellen();
   }
 
+  // ---------- Hotelliste ----------
   function renderHotels() {
     var h = heuteDatum(), html = "";
     TAGE.forEach(function (tag) {
       var dt = parse(tag.d), diff = tageZwischen(dt, h);
       var kl = "day" + (diff === 0 ? " jetzt" : diff > 0 ? " vorbei" : "");
-      html += '<div class="card ' + kl + '" id="tag-' + tag.t + '">';
-      if (diff === 0) html += '<span class="pill">HEUTE</span>';
-      html += '<div class="tag"><span class="nr">Tag ' + tag.t + '</span><span class="muted">' + kurzDatum(dt) + '</span></div>';
-      html += '<p class="big" style="margin:4px 0 2px">' + esc(tag.ort) + '</p>';
-      if (tag.hotel) html += '<p style="margin:0">' + esc(tag.hotel) + '</p>';
-      if (tag.notiz) html += '<p class="small" style="margin:8px 0 0">' + esc(tag.notiz) + '</p>';
-      if (tag.tel) html += anruf(tag.tel, "Hotel anrufen");
-      html += "</div>";
+      var kopf = (diff === 0 ? '<span class="pill">HEUTE</span>' : '') +
+                 '<div class="tag"><span class="nr">Tag ' + tag.t + '</span><span class="muted">' + kurzDatum(dt) + '</span></div>';
+      html += hotelKarte(tag, kl, kopf, "liste-" + tag.t);
     });
     document.getElementById("hotel-liste").innerHTML = html;
   }
 
   // ---------- Navigation ----------
+  var hotelScroll = null;
   function zeige(id) {
+    var m = /^tag-(\d+)$/.exec(id);
+    if (m) {
+      if (!renderHotel(+m[1])) id = "start"; else id = "hotel";
+    }
     if (!document.getElementById(id)) id = "start";
     document.querySelectorAll(".screen").forEach(function (s) { s.classList.toggle("active", s.id === id); });
     if (id === "heute") renderHeute();
+    if (id === "start") renderHeute();
     if (id === "hotels") {
       renderHotels();
-      var i = aktuellerIndex();
-      if (i >= 0) { var el = document.getElementById("tag-" + TAGE[i].t); if (el) { setTimeout(function () { window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 100); }, 60); return; } }
+      var ziel = null;
+      if (hotelScroll !== null) { ziel = hotelScroll; hotelScroll = null; }
+      else {
+        var i = aktuellerIndex(), el = i >= 0 ? document.getElementById("liste-" + TAGE[i].t) : null;
+        if (el) ziel = el.getBoundingClientRect().top + window.scrollY - 100;
+      }
+      if (ziel !== null) { setTimeout(function () { window.scrollTo(0, ziel); }, 60); return; }
     }
     window.scrollTo(0, 0);
   }
+
   document.addEventListener("click", function (e) {
+    if (e.target.closest("a")) return; // Anruf- und Karten-Links normal öffnen
+    var back = e.target.closest("[data-back]");
+    if (back) {
+      if (history.length > 1) history.back(); else location.hash = "hotels";
+      return;
+    }
+    var karte = e.target.closest("[data-tag]");
+    if (karte) {
+      if (location.hash === "#hotels") hotelScroll = window.scrollY;
+      location.hash = "tag-" + karte.getAttribute("data-tag");
+      return;
+    }
     var b = e.target.closest("[data-go]");
     if (!b) return;
     var ziel = b.getAttribute("data-go");
@@ -519,12 +711,14 @@
   setzeSchrift(gespeichert);
 
   // ---------- Start ----------
-  renderHeute();
   zeige(location.hash.slice(1) || "start");
-  setInterval(function () { uhrStellen(); }, 30000);
+  setInterval(uhrStellen, 30000);
   // Beim Zurückkehren in die App (z. B. am nächsten Morgen) neu berechnen
   document.addEventListener("visibilitychange", function () {
-    if (!document.hidden) { renderHeute(); if (location.hash === "#hotels") renderHotels(); }
+    if (document.hidden) return;
+    var id = location.hash.slice(1) || "start";
+    if (id === "start" || id === "heute") renderHeute();
+    if (id === "hotels") renderHotels();
   });
 
   // ---------- Offline-Betrieb ----------
