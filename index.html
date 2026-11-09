@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Indien-Reise</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Indien-Reise">
+<meta name="theme-color" content="#1F4E79">
+<meta name="format-detection" content="telephone=no">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+  :root {
+    --bg: #FFFDF8;
+    --card: #FFFFFF;
+    --text: #111111;
+    --muted: #444444;
+    --line: #C9C2B5;
+    --blue: #1F4E79;
+    --blue-soft: #E6EEF6;
+    --red: #B3261E;
+    --red-soft: #FCEBEA;
+    --green: #1E6B34;
+    --green-soft: #E7F3EA;
+    --amber-soft: #FFF3D6;
+    --base: 21px;
+  }
+  html.gross { --base: 24px; }
+  html.sehrgross { --base: 28px; }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: var(--base);
+    line-height: 1.45;
+    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  }
+  main { max-width: 640px; margin: 0 auto; padding: 16px 16px 48px; }
+  h1 { font-size: 1.5em; line-height: 1.2; margin: 8px 0 4px; }
+  h2 { font-size: 1.2em; margin: 28px 0 10px; }
+  p { margin: 0 0 12px; }
+  .muted { color: var(--muted); }
+  .small { font-size: 0.85em; }
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* Start-Kacheln */
+  .tiles { display: grid; gap: 14px; margin-top: 18px; }
+  .tile {
+    display: flex; align-items: center; gap: 16px;
+    width: 100%; min-height: 88px; padding: 16px 18px;
+    border: 3px solid var(--blue); border-radius: 16px;
+    background: var(--card); color: var(--text);
+    font: inherit; font-size: 1.15em; font-weight: 700; text-align: left;
+    text-decoration: none; cursor: pointer;
+  }
+  .tile:active { background: var(--blue-soft); }
+  .tile .ico { font-size: 1.6em; width: 1.4em; text-align: center; flex: none; }
+  .tile.notfall { border-color: var(--red); color: var(--red); background: var(--red-soft); }
+  .tile .sub { display: block; font-weight: 400; font-size: 0.75em; color: var(--muted); }
+
+  /* Zurück */
+  .back {
+    display: block; width: 100%; min-height: 64px; margin: 0 0 8px;
+    border: 0; border-radius: 14px; background: var(--blue); color: #fff;
+    font: inherit; font-weight: 700; text-align: left; padding: 14px 18px; cursor: pointer;
+    position: sticky; top: calc(env(safe-area-inset-top) + 8px); z-index: 5;
+    box-shadow: 0 0 0 8px var(--bg);
+  }
+
+  /* Karten */
+  .card {
+    background: var(--card); border: 2px solid var(--line); border-radius: 14px;
+    padding: 16px 18px; margin: 12px 0;
+  }
+  .card.heute { border: 3px solid var(--green); background: var(--green-soft); }
+  .card.hinweis { background: var(--amber-soft); border-color: #D9B45A; }
+  .card h3 { font-size: 1.1em; margin: 0 0 6px; }
+  .label { font-size: 0.85em; color: var(--muted); margin: 0; }
+  .big { font-size: 1.3em; font-weight: 700; line-height: 1.25; margin: 2px 0 8px; }
+  .huge { font-size: 1.6em; font-weight: 800; line-height: 1.15; margin: 4px 0 10px; }
+
+  /* Anruf-Tasten */
+  .call {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center; column-gap: 10px;
+    width: 100%; min-height: 64px; margin-top: 10px; padding: 12px 16px;
+    border-radius: 14px; background: var(--green); color: #fff;
+    font-weight: 700; text-decoration: none; text-align: center;
+  }
+  .call.rot { background: var(--red); }
+  .call .nr { font-weight: 400; font-size: 0.9em; display: block; width: 100%; white-space: nowrap; }
+  .call:active { opacity: 0.85; }
+
+  /* Hotelliste */
+  .tag { display: flex; gap: 12px; align-items: baseline; }
+  .tag .nr { font-weight: 800; color: var(--blue); min-width: 3.6em; }
+  .day.vorbei { opacity: 0.55; }
+  .day.jetzt { border: 3px solid var(--green); background: var(--green-soft); }
+  .pill {
+    display: inline-block; background: var(--green); color: #fff; border-radius: 999px;
+    padding: 2px 12px; font-size: 0.8em; font-weight: 700; margin-bottom: 6px;
+  }
+
+  dl { margin: 0; }
+  dt { font-size: 0.85em; color: var(--muted); margin-top: 10px; }
+  dd { margin: 0; font-weight: 700; font-size: 1.1em; }
+  ul { padding-left: 1.1em; margin: 6px 0 0; }
+  li { margin-bottom: 8px; }
+
+  .names { columns: 2; column-gap: 20px; list-style: none; padding: 0; }
+  .names li { break-inside: avoid; }
+
+  .schrift { display: flex; gap: 10px; margin-top: 28px; }
+  .schrift button {
+    flex: 1; min-height: 56px; border-radius: 12px; border: 2px solid var(--blue);
+    background: var(--card); color: var(--blue); font: inherit; font-weight: 700; cursor: pointer;
+  }
+  .schrift button[aria-pressed="true"] { background: var(--blue); color: #fff; }
+  .uhr { display: flex; gap: 12px; margin-top: 12px; }
+  .uhr > div { flex: 1; background: var(--card); border: 2px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+  .uhr .zeit { font-size: 1.35em; font-weight: 800; white-space: nowrap; margin: 0; }
+</style>
+</head>
+<body>
+<main>
+
+<!-- ============ START ============ -->
+<section id="start" class="screen active">
+  <h1>Indien-Reise</h1>
+  <p class="muted">Rajasthan · 21.11. bis 11.12.2026</p>
+
+  <div id="start-heute"></div>
+
+  <div class="tiles">
+    <button class="tile" data-go="heute"><span class="ico">📅</span><span>Heute<span class="sub">Wo bin ich, welches Hotel?</span></span></button>
+    <button class="tile notfall" data-go="notfall"><span class="ico">☎️</span><span>Notfall &amp; Telefon<span class="sub">Reiseleitung anrufen</span></span></button>
+    <button class="tile" data-go="hotels"><span class="ico">🏨</span><span>Alle Hotels<span class="sub">Reiseroute Tag für Tag</span></span></button>
+    <button class="tile" data-go="fluege"><span class="ico">✈️</span><span>Flüge<span class="sub">Hinflug und Rückflug</span></span></button>
+    <button class="tile" data-go="gruppe"><span class="ico">👥</span><span>Gruppe<span class="sub">Reiseleiter und Mitreisende</span></span></button>
+    <button class="tile" data-go="infos"><span class="ico">ℹ️</span><span>Wichtige Hinweise<span class="sub">Regeln, Gepäck, Krankheit</span></span></button>
+  </div>
+
+  <p class="label" style="margin-top:28px">Schriftgröße</p>
+  <div class="schrift" style="margin-top:6px">
+    <button data-size="normal">A</button>
+    <button data-size="gross" style="font-size:1.2em">A</button>
+    <button data-size="sehrgross" style="font-size:1.45em">A</button>
+  </div>
+  <p class="small muted" style="margin-top:20px">Funktioniert ohne Internet. Stand der Reiseunterlagen: 31.10.2026 (Wikinger Reisen, Reise 3310, Vorgang 1160860).</p>
+</section>
+
+<!-- ============ HEUTE ============ -->
+<section id="heute" class="screen">
+  <button class="back" data-go="start">◀ Zurück zur Übersicht</button>
+  <h1>Heute</h1>
+  <div id="heute-inhalt"></div>
+</section>
+
+<!-- ============ NOTFALL ============ -->
+<section id="notfall" class="screen">
+  <button class="back" data-go="start">◀ Zurück zur Übersicht</button>
+  <h1>Notfall &amp; Telefon</h1>
+  <p>Bei jedem Problem zuerst die <b>Reiseleitung</b> anrufen.</p>
+
+  <div class="card">
+    <h3>Reiseleiter Suraj Prakash Shukla</h3>
+    <a class="call rot" href="tel:+919811682460">📞 Reiseleitung anrufen<span class="nr">+91 98116 82460</span></a>
+  </div>
+
+  <div class="card">
+    <h3>Partner vor Ort (Terra World, Notfall)</h3>
+    <a class="call rot" href="tel:+919811173769">📞 Notfall Indien anrufen<span class="nr">+91 98111 73769</span></a>
+    <p class="small muted" style="margin-top:10px">Büro Terra World, New Delhi: <a href="tel:+911126125550">+91 11 2612 5550</a></p>
+  </div>
+
+  <h2>In Deutschland</h2>
+  <div class="card">
+    <h3>Wikinger Reisen – Notruf</h3>
+    <p class="small">Samstag, Sonntag und Feiertage, 6 bis 20 Uhr (deutsche Zeit)</p>
+    <a class="call" href="tel:+491713160975">📞 Wikinger Notruf<span class="nr">+49 171 3160975</span></a>
+  </div>
+  <div class="card">
+    <h3>Wikinger Reisen – Service</h3>
+    <p class="small">Montag bis Freitag, 8 bis 17 Uhr (deutsche Zeit)</p>
+    <a class="call" href="tel:+4923319046">📞 Wikinger Service<span class="nr">+49 2331 9046</span></a>
+  </div>
+  <div class="card">
+    <h3>Karte verloren oder gestohlen?</h3>
+    <p class="small">Sperr-Notruf für EC-, Kredit- und Handykarten</p>
+    <a class="call" href="tel:+49116116">📞 Karte sperren<span class="nr">+49 116 116</span></a>
+  </div>
+  <div class="card">
+    <h3>Reiseversicherung ERGO (ERV)</h3>
+    <p class="small">Nur falls über Wikinger bei der ERGO versichert</p>
+    <a class="call" href="tel:+498941661010">📞 ERGO Notrufzentrale<span class="nr">+49 89 41661010</span></a>
+  </div>
+</section>
+
+<!-- ============ HOTELS ============ -->
+<section id="hotels" class="screen">
+  <button class="back" data-go="start">◀ Zurück zur Übersicht</button>
+  <h1>Alle Hotels</h1>
+  <p class="small muted">Vorläufige Liste – kurzfristige Änderungen sind möglich.</p>
+  <div id="hotel-liste"></div>
+</section>
+
+<!-- ============ FLÜGE ============ -->
+<section id="fluege" class="screen">
+  <button class="back" data-go="start">◀ Zurück zur Übersicht</button>
+  <h1>Flüge</h1>
+
+  <div class="card">
+    <p class="label">Buchungsnummer (für Check-in)</p>
+    <p class="huge" style="letter-spacing:0.08em">YLYYSQ</p>
+    <p class="small muted">Lufthansa · Passagier: Christof Bonn · Gepäck: 1 Koffer, 23 kg</p>
+  </div>
+
+  <div class="card">
+    <h3>Hinflug · Samstag, 21.11.2026</h3>
+    <p class="big">LH 760</p>
+    <dl>
+      <dt>Ab Frankfurt</dt><dd>13:20 Uhr</dd>
+      <dt>An Delhi</dt><dd>01:35 Uhr (Sonntag, 22.11., Ortszeit)</dd>
+    </dl>
+    <p class="small" style="margin-top:12px">Mit dem Zug zum Flughafen: Bahnticket (Rail&amp;Fly) rechtzeitig einlösen. 3 Stunden vor Abflug am Check-in sein.</p>
+  </div>
+
+  <div class="card hinweis">
+    <h3>Nach der Landung in Delhi</h3>
+    <p>Zum <b>Ausgang</b> gehen. Dort wartet ein Mitarbeiter mit einem Schild <b>„Wikinger Reisen“</b>.</p>
+    <p style="margin:0">Falls Sie sich verpassen: Treffpunkt ist am Ankunftstag gegen <b>09:30 Uhr</b> im Hotel Regent Grand.</p>
+  </div>
+
+  <div class="card">
+    <h3>Rückflug · Freitag, 11.12.2026</h3>
+    <p class="big">LH 761</p>
+    <dl>
+      <dt>Ab Delhi</dt><dd>03:35 Uhr nachts</dd>
+      <dt>An Frankfurt</dt><dd>07:55 Uhr</dd>
+    </dl>
+    <p class="small" style="margin-top:12px">Der Abflug ist in der <b>Nacht von Donnerstag auf Freitag</b>. Am Donnerstag gibt es dafür ein Tageszimmer in Delhi.</p>
+  </div>
+
+  <div class="card hinweis">
+    <h3>Wichtig für den Rückflug</h3>
+    <p>In Indien darf man das Flughafengebäude <b>nur mit Bordkarte</b> betreten. Deshalb vorher <b>online einchecken</b>. Die Reiseleitung hilft dabei.</p>
+    <p style="margin:0">Beim Online-Check-in die eigene E-Mail-Adresse angeben, sonst kommt die Bordkarte nicht an.</p>
+  </div>
+
+  <p class="small muted">Alle Uhrzeiten sind Ortszeiten. Flugzeit am Tag vorher bei der Lufthansa prüfen.</p>
+</section>
+
+<!-- ============ GRUPPE ============ -->
+<section id="gruppe" class="screen">
+  <button class="back" data-go="start">◀ Zurück zur Übersicht</button>
+  <h1>Gruppe</h1>
+
+  <div class="card">
+    <p class="label">Reiseleiter</p>
+    <p class="big">Suraj Prakash Shukla</p>
+    <a class="call" href="tel:+919811682460">📞 Anrufen<span class="nr">+91 98116 82460</span></a>
+  </div>
+
+  <div class="card">
+    <p class="label">Zimmer geteilt mit</p>
+    <p class="big">Arndt P.</p>
+    <p class="small muted" style="margin:0">Zweibettzimmer, unterwegs auch im Zelt.</p>
+  </div>
+
+  <div class="card">
+    <h3>Mitreisende</h3>
+    <ul class="names">
+      <li>Burkhard W.</li>
+      <li>Christine H.</li>
+      <li>Christof B.</li>
+      <li>Eberhard P.</li>
+      <li>Hans H.</li>
+      <li>Hans-Christian H.</li>
+      <li>Margit W.</li>
+      <li>Martin R.</li>
+      <li>Michael A.</li>
+      <li>Michael G.</li>
+      <li>Wolf S.</li>
+    </ul>
+  </div>
+
+  <p class="small muted">Reiseveranstalter: Wikinger Reisen, Reise 3310 „Indiens Perle Rajasthan“, inkl. Kamelsafari.</p>
+</section>
+
+<!-- ============ INFOS ============ -->
+<section id="infos" class="screen">
+  <button class="back" data-go="start">◀ Zurück zur Übersicht</button>
+  <h1>Wichtige Hinweise</h1>
+
+  <div class="card hinweis">
+    <h3>In Indien verboten</h3>
+    <ul>
+      <li><b>E-Zigaretten</b> dürfen nicht eingeführt werden.</li>
+      <li><b>Satellitentelefone</b> ohne Genehmigung sind verboten.</li>
+      <li><b>GPS-Tracker</b> dürfen nicht im Flugzeug mitgenommen werden.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>Krank unterwegs</h3>
+    <ul>
+      <li>Arzt und Medikamente muss man meist <b>sofort selbst bezahlen</b>. Kreditkarte mitnehmen.</li>
+      <li><b>Alle Quittungen aufheben</b> für die Versicherung.</li>
+      <li>Zuerst die Reiseleitung anrufen.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>Koffer fehlt oder ist kaputt</h3>
+    <ul>
+      <li><b>Noch im Flughafen</b> bei der Fluggesellschaft melden und eine Verlustmeldung („PIR“) ausfüllen lassen.</li>
+      <li>Verlustmeldung, Gepäckschein, Bordkarte und Kassenzettel für Notkäufe aufheben.</li>
+      <li>Kleidung für 1–2 Tage ins Handgepäck packen.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>Handgepäck</h3>
+    <ul>
+      <li>Flüssigkeiten nur bis 100 ml, alle zusammen in einem durchsichtigen 1-Liter-Beutel.</li>
+      <li>Keine Messer, Scheren, Nagelfeilen, Wanderstöcke oder Regenschirme.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>Ausflüge</h3>
+    <p style="margin:0">Zusätzliche Ausflüge vor Ort gehören nicht zum Programm, kosten meist extra und sind auf eigene Gefahr.</p>
+  </div>
+
+  <div class="card">
+    <h3>Adresse des ersten Hotels (für Taxi)</h3>
+    <p class="big" style="margin-bottom:4px">Hotel Regent Grand</p>
+    <p style="margin:0">2/6 East Patel Nagar, Pusa Road<br>Karol Bagh, New Delhi</p>
+    <a class="call" href="tel:+911146011111">📞 Hotel anrufen<span class="nr">+91 11 4601 1111</span></a>
+  </div>
+</section>
+
+</main>
+
+<script>
+(function () {
+  // ---------- Reisedaten (aus der Hotelliste von Wikinger Reisen) ----------
+  // Datum = Tag der Ankunft / Übernachtung
+  var TAGE = [
+    { t: 1,  d: "2026-11-21", hotel: "Hotel Regent Grand", ort: "Delhi", tel: "+911146011111" , notiz: "Abflug Frankfurt 13:20 Uhr, Landung in Delhi nachts um 01:35 Uhr." },
+    { t: 2,  d: "2026-11-22", hotel: "Hotel Regent Grand", ort: "Delhi", tel: "+911146011111" },
+    { t: 3,  d: "2026-11-23", hotel: "Jagat Palace", ort: "Pushkar", tel: "+911452772001" },
+    { t: 4,  d: "2026-11-24", hotel: "Zeltübernachtung", ort: "Chimana", tel: "+919828377066", notiz: "Kamelsafari – Übernachtung im Zelt." },
+    { t: 5,  d: "2026-11-25", hotel: "Zeltübernachtung", ort: "Bharadiya", tel: "+919828377066", notiz: "Kamelsafari – Übernachtung im Zelt." },
+    { t: 6,  d: "2026-11-26", hotel: "Desert Tulip", ort: "Jaisalmer", tel: "+919001083081" },
+    { t: 7,  d: "2026-11-27", hotel: "Desert Tulip", ort: "Jaisalmer", tel: "+919001083081" },
+    { t: 8,  d: "2026-11-28", hotel: "Shree Ram International", ort: "Jodhpur", tel: "+912912671100" },
+    { t: 9,  d: "2026-11-29", hotel: "Kumbhalgarh Forest Retreat", ort: "Kumbhalgarh", tel: "+919680355725" },
+    { t: 10, d: "2026-11-30", hotel: "Ranakpur Hill Resort", ort: "Ranakpur", tel: "+919057757775" },
+    { t: 11, d: "2026-12-01", hotel: "Hilltop Palace", ort: "Udaipur", tel: "+912942432245" },
+    { t: 12, d: "2026-12-02", hotel: "Hilltop Palace", ort: "Udaipur", tel: "+912942432245" },
+    { t: 13, d: "2026-12-03", hotel: "Castle Bijaipur", ort: "Bijaipur", tel: "+919509963925" },
+    { t: 14, d: "2026-12-04", hotel: "Hadoti Palace", ort: "Bundi", tel: "+919667511111" },
+    { t: 15, d: "2026-12-05", hotel: "Tiger Den Resort", ort: "Sawai Madhopur", tel: "+917462252070" },
+    { t: 16, d: "2026-12-06", hotel: "Park Prime", ort: "Jaipur", tel: "+911412360202" },
+    { t: 17, d: "2026-12-07", hotel: "Park Prime", ort: "Jaipur", tel: "+911412360202" },
+    { t: 18, d: "2026-12-08", hotel: "Udai Vilas Palace", ort: "Bharatpur", tel: "+915644233161" },
+    { t: 19, d: "2026-12-09", hotel: "Golden Tulip", ort: "Agra", tel: "+917454802181" },
+    { t: 20, d: "2026-12-10", hotel: "Dee Mark's (Tageszimmer)", ort: "Delhi", tel: "+919311325493", notiz: "Nur Tageszimmer. Rückflug LH 761 in der Nacht um 03:35 Uhr – online einchecken!" },
+    { t: 21, d: "2026-12-11", hotel: null, ort: "Heimflug", tel: null, notiz: "Rückflug LH 761: ab Delhi 03:35 Uhr, an Frankfurt 07:55 Uhr." }
+  ];
+  var WOCHENTAG = ["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"];
+  var MONAT = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+
+  function parse(s) { var p = s.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  // Zum Testen: ...index.html?datum=2026-11-26 simuliert einen Reisetag
+  var TESTDATUM = (location.search.match(/datum=(\d{4}-\d{2}-\d{2})/) || [])[1];
+  function heuteDatum() {
+    if (TESTDATUM) return parse(TESTDATUM);
+    var n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate());
+  }
+  function tageZwischen(a, b) { return Math.round((b - a) / 86400000); }
+  function langesDatum(dt) { return WOCHENTAG[dt.getDay()] + ", " + dt.getDate() + ". " + MONAT[dt.getMonth()]; }
+  function kurzDatum(dt) { return WOCHENTAG[dt.getDay()].slice(0, 2) + " " + ("0" + dt.getDate()).slice(-2) + "." + ("0" + (dt.getMonth() + 1)).slice(-2) + "."; }
+  function telAnzeige(t) {
+    // +91 und 10 Ziffern in zwei gut lesbaren 5er-Gruppen
+    var r = t.replace("+91", "");
+    return "+91 " + r.slice(0, 5) + " " + r.slice(5);
+  }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function anruf(tel, text) {
+    return '<a class="call" href="tel:' + tel + '">📞 ' + esc(text) + '<span class="nr">' + telAnzeige(tel) + '</span></a>';
+  }
+
+  function aktuellerIndex() {
+    var h = heuteDatum();
+    for (var i = 0; i < TAGE.length; i++) if (tageZwischen(parse(TAGE[i].d), h) === 0) return i;
+    return -1;
+  }
+
+  function tagKarte(tag, klasse) {
+    var dt = parse(tag.d);
+    var html = '<div class="card ' + (klasse || "") + '">';
+    html += '<p class="label">Tag ' + tag.t + ' von 21 · ' + langesDatum(dt) + '</p>';
+    html += '<p class="huge">' + esc(tag.ort) + '</p>';
+    if (tag.hotel) html += '<p class="label">Übernachtung</p><p class="big">' + esc(tag.hotel) + '</p>';
+    if (tag.notiz) html += '<p>' + esc(tag.notiz) + '</p>';
+    if (tag.tel) html += anruf(tag.tel, "Hotel anrufen");
+    return html + "</div>";
+  }
+
+  function uhrHtml() {
+    return '<div class="uhr"><div><p class="label">Uhrzeit hier</p><p class="zeit" id="uhr-hier">–</p></div>' +
+           '<div><p class="label">In Deutschland</p><p class="zeit" id="uhr-de">–</p></div></div>';
+  }
+  function uhrStellen() {
+    var n = new Date();
+    var opt = { hour: "2-digit", minute: "2-digit" };
+    var hier = document.getElementById("uhr-hier"), de = document.getElementById("uhr-de");
+    if (hier) hier.textContent = n.toLocaleTimeString("de-DE", opt);
+    if (de) {
+      try { de.textContent = n.toLocaleTimeString("de-DE", Object.assign({ timeZone: "Europe/Berlin" }, opt)); }
+      catch (e) { de.textContent = "–"; }
+    }
+  }
+
+  function renderHeute() {
+    var h = heuteDatum();
+    var start = parse(TAGE[0].d), ende = parse(TAGE[TAGE.length - 1].d);
+    var i = aktuellerIndex();
+    var html = '<p class="big">' + langesDatum(h) + '</p>';
+    var kurz = "";
+
+    if (h < start) {
+      var n = tageZwischen(h, start);
+      html += '<div class="card heute"><p class="huge">Noch ' + n + (n === 1 ? ' Tag' : ' Tage') + '</p>' +
+              '<p>Abflug am <b>Samstag, 21. November</b> um <b>13:20 Uhr</b> in Frankfurt (LH 760).</p>' +
+              '<p style="margin:0">3 Stunden vorher am Check-in sein.</p></div>';
+      kurz = '<div class="card heute"><p class="label">Reisebeginn</p><p class="big">Noch ' + n + (n === 1 ? ' Tag' : ' Tage') + ' bis zum Abflug</p></div>';
+    } else if (h > ende) {
+      html += '<div class="card heute"><p class="huge">Willkommen zurück!</p><p style="margin:0">Die Reise ist vorbei.</p></div>';
+    } else if (i >= 0) {
+      var tag = TAGE[i];
+      html += tagKarte(tag, "heute");
+      if (i + 1 < TAGE.length) {
+        var morgen = TAGE[i + 1];
+        html += '<h2>Morgen</h2>';
+        html += '<div class="card"><p class="label">' + langesDatum(parse(morgen.d)) + '</p><p class="big">' + esc(morgen.ort) + '</p>' +
+                (morgen.hotel ? '<p style="margin:0">' + esc(morgen.hotel) + '</p>' : '') +
+                (morgen.notiz ? '<p style="margin:8px 0 0">' + esc(morgen.notiz) + '</p>' : '') + '</div>';
+      }
+      kurz = '<div class="card heute"><p class="label">Heute · Tag ' + tag.t + ' von 21</p><p class="big" style="margin-bottom:2px">' +
+             esc(tag.ort) + '</p>' + (tag.hotel ? '<p style="margin:0">' + esc(tag.hotel) + '</p>' : '') + '</div>';
+    }
+    html += uhrHtml();
+    html += '<a class="call rot" style="margin-top:20px" href="tel:+919811682460">📞 Reiseleitung anrufen<span class="nr">+91 98116 82460</span></a>';
+
+    document.getElementById("heute-inhalt").innerHTML = html;
+    document.getElementById("start-heute").innerHTML = kurz;
+    uhrStellen();
+  }
+
+  function renderHotels() {
+    var h = heuteDatum(), html = "";
+    TAGE.forEach(function (tag) {
+      var dt = parse(tag.d), diff = tageZwischen(dt, h);
+      var kl = "day" + (diff === 0 ? " jetzt" : diff > 0 ? " vorbei" : "");
+      html += '<div class="card ' + kl + '" id="tag-' + tag.t + '">';
+      if (diff === 0) html += '<span class="pill">HEUTE</span>';
+      html += '<div class="tag"><span class="nr">Tag ' + tag.t + '</span><span class="muted">' + kurzDatum(dt) + '</span></div>';
+      html += '<p class="big" style="margin:4px 0 2px">' + esc(tag.ort) + '</p>';
+      if (tag.hotel) html += '<p style="margin:0">' + esc(tag.hotel) + '</p>';
+      if (tag.notiz) html += '<p class="small" style="margin:8px 0 0">' + esc(tag.notiz) + '</p>';
+      if (tag.tel) html += anruf(tag.tel, "Hotel anrufen");
+      html += "</div>";
+    });
+    document.getElementById("hotel-liste").innerHTML = html;
+  }
+
+  // ---------- Navigation ----------
+  function zeige(id) {
+    if (!document.getElementById(id)) id = "start";
+    document.querySelectorAll(".screen").forEach(function (s) { s.classList.toggle("active", s.id === id); });
+    if (id === "heute") renderHeute();
+    if (id === "hotels") {
+      renderHotels();
+      var i = aktuellerIndex();
+      if (i >= 0) { var el = document.getElementById("tag-" + TAGE[i].t); if (el) { setTimeout(function () { window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 100); }, 60); return; } }
+    }
+    window.scrollTo(0, 0);
+  }
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-go]");
+    if (!b) return;
+    var ziel = b.getAttribute("data-go");
+    if (ziel === "start") location.hash = ""; else location.hash = ziel;
+  });
+  window.addEventListener("hashchange", function () { zeige(location.hash.slice(1) || "start"); });
+
+  // ---------- Schriftgröße ----------
+  function setzeSchrift(g) {
+    document.documentElement.classList.remove("gross", "sehrgross");
+    if (g !== "normal") document.documentElement.classList.add(g);
+    document.querySelectorAll("[data-size]").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-size") === g ? "true" : "false"); });
+    try { localStorage.setItem("schrift", g); } catch (e) {}
+  }
+  document.querySelectorAll("[data-size]").forEach(function (b) {
+    b.addEventListener("click", function () { setzeSchrift(b.getAttribute("data-size")); });
+  });
+  var gespeichert = "gross";
+  try { gespeichert = localStorage.getItem("schrift") || "gross"; } catch (e) {}
+  setzeSchrift(gespeichert);
+
+  // ---------- Start ----------
+  renderHeute();
+  zeige(location.hash.slice(1) || "start");
+  setInterval(function () { uhrStellen(); }, 30000);
+  // Beim Zurückkehren in die App (z. B. am nächsten Morgen) neu berechnen
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden) { renderHeute(); if (location.hash === "#hotels") renderHotels(); }
+  });
+
+  // ---------- Offline-Betrieb ----------
+  if ("serviceWorker" in navigator && location.protocol !== "file:") {
+    navigator.serviceWorker.register("sw.js").catch(function () {});
+  }
+})();
+</script>
+</body>
+</html>
