@@ -93,6 +93,38 @@
   .card.heute { border: 3px solid var(--green); background: var(--green-soft); }
   .card.hinweis { background: var(--amber-soft); border-color: #D9B45A; }
   .card.tipp { background: var(--amber-soft); border: 3px solid #E0A93A; }
+  .checkliste h3 { margin-bottom: 2px; }
+  .checkliste .label { margin-bottom: 8px; }
+  .check {
+    display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; margin: 6px 0;
+    padding: 8px 10px; border: 2px solid var(--line); border-radius: 12px; background: var(--card);
+    font: inherit; color: var(--text); text-align: left; cursor: pointer;
+  }
+  .check .kasten {
+    flex: none; width: 30px; height: 30px; border: 3px solid var(--blue); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff;
+  }
+  .check .ctext { flex: 1; min-width: 0; }
+  .check.an { background: var(--green-soft); border-color: var(--green); }
+  .check.an .kasten { background: var(--green); border-color: var(--green); }
+  .check.an .ctext { color: var(--muted); text-decoration: line-through; }
+  /* Zugeklappte Checkliste auf der Flugseite */
+  .checkliste.klapp { padding: 0; }
+  .checkliste.klapp summary {
+    display: flex; align-items: center; gap: 10px; min-height: 64px; padding: 12px 16px;
+    list-style: none; cursor: pointer;
+  }
+  .checkliste.klapp summary::-webkit-details-marker { display: none; }
+  .checkliste.klapp .stitel { flex: 1; min-width: 0; }
+  .checkliste.klapp .stitel .label { display: block; margin: 2px 0 0; }
+  .checkliste.klapp .pfeil { flex: none; font-size: 1.8em; line-height: 1; color: var(--blue); transition: transform 0.2s; }
+  .checkliste.klapp[open] .pfeil { transform: rotate(90deg); }
+  .checkliste.klapp[open] { padding: 0 16px 14px; }
+  .checkliste.klapp[open] summary { padding: 12px 0; }
+  .check-reset {
+    margin-top: 8px; min-height: 44px; padding: 6px 12px; border-radius: 10px; border: 2px solid var(--line);
+    background: var(--bg); color: var(--muted); font: inherit; font-size: 0.8em; cursor: pointer;
+  }
   .card h3 { font-size: 1.1em; margin: 0 0 6px; }
   .label { font-size: 0.85em; color: var(--muted); margin: 0; }
   .big { font-size: 1.3em; font-weight: 700; line-height: 1.25; margin: 2px 0 8px; }
@@ -332,6 +364,8 @@
     <p class="small" style="margin:12px 0 0">Mit dem Zug zum Flughafen: Bahnticket (Rail&amp;Fly) rechtzeitig einlösen. 3 Stunden vor Abflug am Check-in sein.</p>
   </div>
 
+  <div id="fluege-check-hin"></div>
+
   <div class="card hinweis">
     <h3>Nach der Landung in Delhi</h3>
     <p>Zum <b>Ausgang</b> gehen. Dort wartet ein Mitarbeiter mit einem Schild <b>„Wikinger Reisen“</b>.</p>
@@ -353,6 +387,8 @@
     <p>In Indien darf man das Flughafengebäude <b>nur mit Bordkarte</b> betreten. Deshalb vorher <b>online einchecken</b>. Die Reiseleitung hilft dabei.</p>
     <p style="margin:0">Beim Online-Check-in die eigene E-Mail-Adresse angeben, sonst kommt die Bordkarte nicht an.</p>
   </div>
+
+  <div id="fluege-check-rueck"></div>
 
   <p class="small muted">Alle Uhrzeiten sind Ortszeiten. Flugzeit am Tag vorher bei der Lufthansa prüfen.</p>
 </section>
@@ -410,7 +446,7 @@
 
   <div class="card">
     <p class="label">Zimmer geteilt mit</p>
-    <p class="big">Arndt P.</p>
+    <p class="big">Hans-Christian H.</p>
     <p class="small muted" style="margin:0">Zweibettzimmer, bei der Kamelsafari Zweipersonenzelt.</p>
   </div>
 
@@ -618,6 +654,87 @@
     { titel: "Pass fotografieren", text: "Pass und Visum fotografieren und auf dem Handy speichern. Eine Papierkopie getrennt vom Original im Handgepäck hilft im Notfall." },
     { titel: "Schon mal üben", text: "„Namaste“ (na-mas-tee) zur Begrüßung und „Dhanyavaad“ (dan-ja-wad) für danke – damit kommt man in Indien schon weit." }
   ];
+  // ---------- Checklisten vor dem Flug (Haken werden nur auf diesem iPhone gespeichert) ----------
+  var CHECKLISTEN = {
+    hin: {
+      titel: "✅ Checkliste vor dem Hinflug",
+      punkte: [
+        "Reisepass (mindestens 6 Monate gültig)",
+        "Indisches Visum (e-Visum ausgedruckt)",
+        "Kreditkarte, EC-Karte und etwas Euro-Bargeld",
+        "Bahnticket zum Flughafen (Rail&Fly eingelöst)",
+        "Versichertenkarte und Nachweis Auslandskrankenversicherung",
+        "Medikamente ins Handgepäck (mit Liste)",
+        "Brille / Lesebrille",
+        "Handy, Ladekabel und Reisestecker für Indien",
+        "Flüssigkeiten bis 100 ml im 1-Liter-Beutel",
+        "Fotos von Pass und Visum auf dem Handy",
+        "Warme Jacke für die Wüstennächte eingepackt",
+        "Desinfektionstücher (Handgepäck und Kamelsafari)"
+      ]
+    },
+    rueck: {
+      titel: "✅ Checkliste vor dem Rückflug",
+      punkte: [
+        "Online eingecheckt – Bordkarte auf dem Handy oder ausgedruckt",
+        "Reisepass griffbereit",
+        "Bahnticket für die Heimfahrt (Rail&Fly)",
+        "Wertsachen aus dem Hotelsafe geholt",
+        "Ladekabel und Brille eingepackt",
+        "Medikamente im Handgepäck",
+        "Restliche Rupien ausgegeben"
+      ]
+    }
+  };
+  var CHECK_KEY = "reise-checkliste-v1";
+  function leseHaken() { try { return JSON.parse(localStorage.getItem(CHECK_KEY) || "{}") || {}; } catch (e) { return {}; } }
+  // klappbar = true: als zugeklappte Zeile mit Fortschritt (Flugseite), sonst offen (Heute)
+  function checklisteHtml(id, klappbar, offen) {
+    var l = CHECKLISTEN[id], haken = leseHaken(), erledigt = 0;
+    var punkte = l.punkte.map(function (p, n) {
+      var k = id + "-" + n, an = !!haken[k];
+      if (an) erledigt++;
+      return '<button type="button" class="check' + (an ? ' an' : '') + '" data-check="' + k + '" aria-pressed="' + an + '">' +
+             '<span class="kasten" aria-hidden="true">' + (an ? '✓' : '') + '</span><span class="ctext">' + esc(p) + '</span></button>';
+    }).join("");
+    var stand = erledigt + ' von ' + l.punkte.length + ' erledigt' + (erledigt === l.punkte.length ? ' – alles bereit! 👍' : '');
+    var rest = punkte +
+           (erledigt ? '<button type="button" class="check-reset" data-check-reset="' + id + '">Haken zurücksetzen</button>' : '');
+    if (klappbar) {
+      return '<details class="card checkliste klapp" data-liste="' + id + '" data-klapp="1"' + (offen ? ' open' : '') + '>' +
+             '<summary><span class="stitel"><b>' + esc(l.titel) + '</b><span class="label">' + stand + '</span></span>' +
+             '<span class="pfeil" aria-hidden="true">›</span></summary>' + rest + '</details>';
+    }
+    return '<div class="card checkliste" data-liste="' + id + '"><h3>' + esc(l.titel) + '</h3>' +
+           '<p class="label">' + stand + '</p>' + rest + '</div>';
+  }
+  // Haken setzen: alle angezeigten Listen gleichzeitig aktualisieren (Heute und Flüge),
+  // dabei bleibt eine aufgeklappte Liste aufgeklappt
+  function zeichneChecklisten() {
+    document.querySelectorAll(".checkliste[data-liste]").forEach(function (el) {
+      var neu = document.createElement("div");
+      neu.innerHTML = checklisteHtml(el.getAttribute("data-liste"), el.hasAttribute("data-klapp"), el.open);
+      el.replaceWith(neu.firstChild);
+    });
+  }
+  document.addEventListener("click", function (e) {
+    var c = e.target.closest("[data-check]");
+    if (c) {
+      var haken = leseHaken(), k = c.getAttribute("data-check");
+      if (haken[k]) delete haken[k]; else haken[k] = true;
+      try { localStorage.setItem(CHECK_KEY, JSON.stringify(haken)); } catch (err) {}
+      zeichneChecklisten();
+      return;
+    }
+    var r = e.target.closest("[data-check-reset]");
+    if (r && window.confirm("Alle Haken dieser Liste entfernen?")) {
+      var id = r.getAttribute("data-check-reset"), h = leseHaken();
+      Object.keys(h).forEach(function (key) { if (key.indexOf(id + "-") === 0) delete h[key]; });
+      try { localStorage.setItem(CHECK_KEY, JSON.stringify(h)); } catch (err) {}
+      zeichneChecklisten();
+    }
+  });
+
   function tippKarte(t) {
     return '<div class="card tipp"><p class="label">💡 Tipp des Tages</p><h3>' + esc(t.titel) + '</h3><p style="margin:0">' + esc(t.text) + '</p></div>';
   }
@@ -742,6 +859,7 @@
       html += '<div class="card heute"><p class="huge">Noch ' + n + (n === 1 ? ' Tag' : ' Tage') + '</p>' +
               '<p>Abflug am <b>Samstag, 21. November</b> um <b>13:20 Uhr</b> in Frankfurt (LH 760).</p>' +
               '<p style="margin:0">3 Stunden vorher am Check-in sein.</p></div>';
+      html += checklisteHtml("hin");
       html += tippKarte(VORFREUDE[n % VORFREUDE.length]);
       sub = "Noch " + n + (n === 1 ? " Tag" : " Tage") + " bis zum Abflug";
     } else if (h > ende) {
@@ -749,6 +867,8 @@
       sub = "Die Reise ist vorbei";
     } else if (i >= 0) {
       var tag = TAGE[i];
+      if (tag.t === 1) html += checklisteHtml("hin");      // Abflugtag
+      if (tag.t >= 20) html += checklisteHtml("rueck");   // Rückflug in der Nacht von Tag 20 auf 21
       html += hotelKarte(tag, "heute", '<p class="label">Tag ' + tag.t + ' von 21 · Heute übernachten in</p>');
       html += '<div class="card"><h3>Programm heute</h3><p style="margin:0">' + esc(tag.prog) + '</p></div>';
       if (TIPPS[i]) html += tippKarte(TIPPS[i]);
@@ -869,8 +989,8 @@
       return '<p>Hier ist es <b>' + n.toLocaleTimeString("de-DE", opt) + ' Uhr</b>' + (de ? ', in Deutschland <b>' + de + ' Uhr</b>' : '') + '.</p>' +
              '<p>Indien ist Deutschland im Winter <b>4½ Stunden voraus</b>.</p>';
     }
-    if (/zimmer.*(partner|mit wem|teil)|mit wem.*zimmer|arndt/.test(f)) {
-      return '<p>Das Zimmer teilst du mit <b>Arndt P.</b> – bei der Kamelsafari auch das Zelt.</p>';
+    if (/zimmer.*(partner|mit wem|teil)|mit wem.*zimmer|hufeland|hans-christian/.test(f)) {
+      return '<p>Das Zimmer teilst du mit <b>Hans-Christian H.</b> – bei der Kamelsafari auch das Zelt.</p>';
     }
     if (/wie viele tage|wieviele tage|welcher tag|der wievielte/.test(f)) {
       i = aktuellerIndex();
@@ -1122,6 +1242,10 @@
     if (id === "start") renderHeute();
     if (id === "chat" && !chatBusy) ladeChat(); // aktives Gespräch anzeigen
     if (id === "archiv") renderArchiv();
+    if (id === "fluege") {
+      document.getElementById("fluege-check-hin").innerHTML = checklisteHtml("hin", true);
+      document.getElementById("fluege-check-rueck").innerHTML = checklisteHtml("rueck", true);
+    }
     if (id === "hotels") {
       renderHotels();
       var ziel = null;
