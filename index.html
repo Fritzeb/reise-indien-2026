@@ -83,6 +83,7 @@
   }
   .card.heute { border: 3px solid var(--green); background: var(--green-soft); }
   .card.hinweis { background: var(--amber-soft); border-color: #D9B45A; }
+  .card.tipp { background: var(--amber-soft); border: 3px solid #E0A93A; }
   .card h3 { font-size: 1.1em; margin: 0 0 6px; }
   .label { font-size: 0.85em; color: var(--muted); margin: 0; }
   .big { font-size: 1.3em; font-weight: 700; line-height: 1.25; margin: 2px 0 8px; }
@@ -186,6 +187,21 @@
   }
   .blase .aktionen { margin-top: 10px; }
   #chat-form { margin-top: 16px; padding: 8px 0 12px; }
+  .chat-tasten { display: flex; gap: 8px; margin-top: 12px; }
+  .chat-tasten button {
+    flex: 1; min-height: 52px; padding: 8px 10px; border-radius: 12px; border: 2px solid var(--blue);
+    background: var(--card); color: var(--blue); font: inherit; font-size: 0.8em; font-weight: 700; cursor: pointer;
+  }
+  .chat-tasten button[hidden] { display: none; }
+  .gespraech { display: flex; align-items: center; gap: 10px; }
+  .gespraech .text { flex: 1; min-width: 0; }
+  .gespraech .weg {
+    flex: none; width: 56px; height: 56px; border-radius: 12px; border: 2px solid var(--line);
+    background: var(--card); font-size: 1.3em; cursor: pointer;
+  }
+  .gespraech .weg:active { background: var(--red-soft); border-color: var(--red); }
+  .gespraech .titel { font-weight: 700; margin: 2px 0 0; }
+  .gespraech.aktiv { border: 3px solid var(--green); background: var(--green-soft); }
   #chat-eingabe {
     width: 100%; min-height: 72px; margin-top: 4px; padding: 12px; border-radius: 12px;
     border: 2px solid var(--blue); font: inherit; resize: vertical; background: var(--card); color: var(--text);
@@ -213,11 +229,11 @@
     <button class="tile heute" data-go="heute"><span class="ico">📅</span><span>Heute<span class="sub" id="heute-sub">Wo bin ich, welches Hotel?</span></span></button>
     <button class="tile" data-go="hotels"><span class="ico">🏨</span><span>Alle Hotels<span class="sub">Reiseroute Tag für Tag</span></span></button>
     <button class="tile" data-go="fluege"><span class="ico">✈️</span><span>Flüge<span class="sub">Hinflug und Rückflug</span></span></button>
-    <button class="tile notfall" data-go="notfall"><span class="ico">☎️</span><span>Notfall &amp; Telefon<span class="sub">Reiseleitung anrufen</span></span></button>
     <button class="tile" data-go="chat"><span class="ico">💬</span><span>Frage stellen<span class="sub">Fragen zur Reise und mehr</span></span></button>
     <button class="tile" data-go="gruppe"><span class="ico">👥</span><span>Gruppe<span class="sub">Reiseleiter und Mitreisende</span></span></button>
     <button class="tile" data-go="infos"><span class="ico">ℹ️</span><span>Wichtige Hinweise<span class="sub">Regeln, Gepäck, Krankheit</span></span></button>
     <a class="tile" href="https://pass.telekom.de" target="_blank" rel="noopener"><span class="ico">📶</span><span>Mobile Daten<span class="sub">Telekom-Datenvolumen ansehen und buchen (WLAN ausschalten)</span></span></a>
+    <button class="tile notfall" data-go="notfall"><span class="ico">☎️</span><span>Notfall &amp; Telefon<span class="sub">Reiseleitung anrufen</span></span></button>
   </div>
 
   <p class="label" style="margin-top:28px">Schriftgröße</p>
@@ -265,12 +281,25 @@
 
   <div id="chat-verlauf" aria-live="polite"></div>
 
+  <div class="chat-tasten">
+    <button type="button" id="chat-neu" hidden>➕ Neues Gespräch</button>
+    <button type="button" id="chat-archiv-knopf" data-go="archiv" hidden>📂 Frühere Gespräche</button>
+  </div>
+
   <form id="chat-form" autocomplete="off">
     <label for="chat-eingabe" class="label">Ihre Frage</label>
     <textarea id="chat-eingabe" rows="2" placeholder="z. B. Was heißt danke auf Hindi?"></textarea>
     <button type="submit" class="senden">Frage senden</button>
     <p class="small muted" style="margin:8px 0 0">Tipp: Auf der Tastatur das <b>Mikrofon</b> antippen und die Frage einfach sprechen.</p>
   </form>
+</section>
+
+<!-- ============ GESPRÄCHS-ARCHIV ============ -->
+<section id="archiv" class="screen">
+  <button class="back" data-go="chat">◀ Zurück zum Chat</button>
+  <h1>Frühere Gespräche</h1>
+  <p class="small muted">Antippen, um ein Gespräch wieder zu öffnen und weiterzufragen. Gespeichert nur auf diesem iPhone.</p>
+  <div id="archiv-liste"></div>
 </section>
 
 <!-- ============ FLÜGE ============ -->
@@ -550,6 +579,40 @@
     { t: 20, d: "2026-12-10", h: "deemarks", prog: "Wer möchte: Taj Mahal bei Sonnenaufgang. Fahrt nach Delhi (210 km) mit Halt in Sikandra. Tageszimmer zum Frischmachen. Kurz nach Mitternacht Transfer zum Flughafen – vorher online einchecken!" },
     { t: 21, d: "2026-12-11", h: null, ort: "Heimflug", prog: "Rückflug LH 761: ab Delhi 03:35 Uhr, an Frankfurt 07:55 Uhr." }
   ];
+  // ---------- Tipp des Tages (ein Tipp pro Reisetag, passend zur Station) ----------
+  var TIPPS = [
+    { titel: "Namaste! 🙏", text: "Die wichtigste Begrüßung in Indien: „Namaste“ (gesprochen: na-mas-tee). Dazu die Handflächen vor der Brust zusammenlegen und leicht nicken. Passt immer – morgens, mittags, abends und zum Abschied." },
+    { titel: "Danke auf Hindi", text: "„Dhanyavaad“ (dan-ja-wad) heißt danke. Lockerer und im Alltag häufiger: „Shukriya“ (schuk-ri-ja). Mit einem Lächeln kommt beides gut an." },
+    { titel: "Pushkar – die heilige Stadt", text: "Pushkar hat einen der ganz wenigen Tempel für den Schöpfergott Brahma. Die Stadt ist heilig: Fleisch, Eier und Alkohol gibt es hier nicht. An den Ghats am See Schuhe ausziehen und keine badenden Pilger fotografieren. Wer Blumen „geschenkt“ bekommt, soll danach oft spenden – freundlich „Nahin, dhanyavaad“ (na-hin, dan-ja-wad) sagen: Nein, danke." },
+    { titel: "Kamel-Tipp 🐪", text: "Kamele stehen mit den Hinterbeinen zuerst auf. Deshalb beim Aufstehen und Hinknien weit nach hinten lehnen und gut am Sattel festhalten. Lange, bequeme Hose anziehen, damit nichts scheuert." },
+    { titel: "Die Bishnoi", text: "Die Bishnoi schützen seit über 500 Jahren Bäume und Tiere. Ihr Name kommt von „bis“ (20) und „noi“ (9) – für die 29 Regeln ihres Gründers Guru Jambheshwar. 1730 gaben in Khejarli 363 Bishnoi ihr Leben, um ihre Bäume vor dem Fällen zu schützen." },
+    { titel: "Die goldene Stadt", text: "Jaisalmer heißt „die goldene Stadt“, weil fast alles aus gelbem Sandstein gebaut ist – besonders schön im Abendlicht. Das Fort ist eines der wenigen in der Welt, in dem bis heute tausende Menschen wohnen." },
+    { titel: "Ek Chai, bitte ☕", text: "Masala-Chai ist süßer Milchtee mit Gewürzen wie Ingwer und Kardamom – oft im kleinen Tonbecher. „Ek chai“ (ek tschai) heißt „ein Tee“. Am freien Nachmittag einfach irgendwo hinsetzen und dem Treiben zuschauen." },
+    { titel: "Die blaue Stadt", text: "Rund um das Mehrangarh-Fort sind viele Häuser blau gestrichen – darum heißt Jodhpur „die blaue Stadt“. Das Fort wurde 1459 von Rao Jodha gegründet. Tipp: Jodhpur ist berühmt für seine dicke, süße „Makhaniya Lassi“ (Joghurtgetränk)." },
+    { titel: "Die große Mauer Indiens", text: "Die Mauer um das Fort Kumbhalgarh ist rund 36 km lang – sie gilt als eine der längsten Mauern der Welt nach der Chinesischen Mauer. Hier wurde Maharana Pratap geboren, ein großer Held der Rajputen." },
+    { titel: "1.444 Säulen", text: "Der Jain-Tempel von Ranakpur hat 1.444 Marmorsäulen – und keine gleicht der anderen. Wichtig beim Besuch: Schuhe aus, Schultern und Knie bedeckt, und keine Lederwaren (Gürtel, Taschen, Geldbeutel) mit hinein nehmen." },
+    { titel: "James Bond in Udaipur", text: "Udaipur ist „die Stadt der Seen“. Der Palast mitten im Pichola-See und andere Orte der Stadt spielten 1983 im James-Bond-Film „Octopussy“ mit. Einige Restaurants zeigen den Film bis heute jeden Abend." },
+    { titel: "Wie geht's?", text: "„Kaise hain?“ (kä-se häin) heißt „Wie geht es Ihnen?“. Die Antwort: „Thik hai“ (tiek häi) – „Gut, alles in Ordnung“. Und nicht wundern: Ein seitliches Kopfwackeln bedeutet meist „ja“ oder „okay“." },
+    { titel: "Chittorgarh", text: "Chittorgarh ist eine der größten Festungen Indiens und ein Symbol für den Stolz der Rajputen. Der 37 Meter hohe „Siegesturm“ aus dem 15. Jahrhundert ist über und über mit Figuren verziert. Beim Wandern heute: genug Wasser und Sonnenhut mitnehmen." },
+    { titel: "Bundi – die verträumte Stadt", text: "Bundi ist ruhiger als die großen Städte. Der Legende nach schrieb Rudyard Kipling („Das Dschungelbuch“) hier Teile seines Romans „Kim“. Berühmt sind auch die tiefen Stufenbrunnen der Stadt." },
+    { titel: "Safari-Tipps 🐅", text: "Im offenen Wagen kann es kühl und staubig werden: warme Jacke und Tuch mitnehmen. Möglichst leise sein, ein Fernglas hilft. Die Tiger im Park haben Nummern als Namen – fragt den Ranger, welcher hier gerade unterwegs ist." },
+    { titel: "Die rosa Stadt", text: "Jaipur wurde 1876 für den Besuch des britischen Prinzen von Wales rosa gestrichen – Rosa gilt als Farbe der Gastfreundschaft. Bis heute ist die Farbe in der Altstadt Pflicht." },
+    { titel: "953 Fenster", text: "Der „Palast der Winde“ (Hawa Mahal) hat 953 kleine Fenster. Durch sie konnten die Frauen des Hofes das Leben auf der Straße beobachten, ohne selbst gesehen zu werden. Die Sternwarte Jantar Mantar hat eine der größten Sonnenuhren der Welt." },
+    { titel: "Das Vogelparadies", text: "Der Keoladeo-Nationalpark in Bharatpur war früher Jagdrevier der Maharadschas – heute ist er Weltnaturerbe. Hier leben über 350 Vogelarten, im Winter kommen viele Zugvögel. Ein Fernglas lohnt sich!" },
+    { titel: "Das Taj Mahal", text: "Großmogul Shah Jahan ließ das Taj Mahal für seine verstorbene Frau Mumtaz Mahal bauen – rund 20.000 Arbeiter brauchten etwa 20 Jahre. Der Marmor ändert seine Farbe: morgens rosa, mittags weiß, abends golden." },
+    { titel: "Phir milenge!", text: "„Phir milenge“ (fir mi-len-ge) heißt „Wir sehen uns wieder“ – schön zum Abschied. Am Ende der Reise ist ein Trinkgeld für Fahrer und Reiseleitung üblich; am besten in der Gruppe absprechen. Und: Rückflug online einchecken!" },
+    { titel: "Shubh yatra! ✈️", text: "„Shubh yatra“ (schubh jaa-tra) heißt „Gute Reise“. Komm gut nach Hause – und erzähl allen von Rajasthan!" }
+  ];
+  var VORFREUDE = [
+    { titel: "Warm einpacken", text: "In der Wüste wird es nachts im November kalt, tagsüber ist es warm. Also: Zwiebelprinzip, eine warme Jacke und eine Mütze für die Nächte im Zelt." },
+    { titel: "Wasser-Regel", text: "In Indien nur Wasser aus verschlossenen Flaschen trinken – auch zum Zähneputzen. Und kein Eis in Getränken." },
+    { titel: "Pass fotografieren", text: "Pass und Visum fotografieren und auf dem Handy speichern. Eine Papierkopie getrennt vom Original im Handgepäck hilft im Notfall." },
+    { titel: "Schon mal üben", text: "„Namaste“ (na-mas-tee) zur Begrüßung und „Dhanyavaad“ (dan-ja-wad) für danke – damit kommt man in Indien schon weit." }
+  ];
+  function tippKarte(t) {
+    return '<div class="card tipp"><p class="label">💡 Tipp des Tages</p><h3>' + esc(t.titel) + '</h3><p style="margin:0">' + esc(t.text) + '</p></div>';
+  }
+
   var WOCHENTAG = ["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"];
   var MONAT = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
 
@@ -670,6 +733,7 @@
       html += '<div class="card heute"><p class="huge">Noch ' + n + (n === 1 ? ' Tag' : ' Tage') + '</p>' +
               '<p>Abflug am <b>Samstag, 21. November</b> um <b>13:20 Uhr</b> in Frankfurt (LH 760).</p>' +
               '<p style="margin:0">3 Stunden vorher am Check-in sein.</p></div>';
+      html += tippKarte(VORFREUDE[n % VORFREUDE.length]);
       sub = "Noch " + n + (n === 1 ? " Tag" : " Tage") + " bis zum Abflug";
     } else if (h > ende) {
       html += '<div class="card heute"><p class="huge">Willkommen zurück!</p><p style="margin:0">Die Reise ist vorbei.</p></div>';
@@ -678,6 +742,7 @@
       var tag = TAGE[i];
       html += hotelKarte(tag, "heute", '<p class="label">Tag ' + tag.t + ' von 21 · Heute übernachten in</p>');
       html += '<div class="card"><h3>Programm heute</h3><p style="margin:0">' + esc(tag.prog) + '</p></div>';
+      if (TIPPS[i]) html += tippKarte(TIPPS[i]);
       if (i + 1 < TAGE.length) {
         var morgen = TAGE[i + 1];
         html += '<h2>Morgen</h2>';
@@ -820,14 +885,147 @@
 
   function nurText(html) { var d = document.createElement("div"); d.innerHTML = html; return (d.textContent || "").replace(/\s+/g, " ").trim(); }
 
-  function blase(html, wer, extra) {
+  function blase(html, wer, extra, wartet) {
     var el = document.createElement("div");
-    el.className = "blase " + wer;
+    el.className = "blase " + wer + (wartet ? " wartet" : "");
     el.innerHTML = html + (extra || "");
     document.getElementById("chat-verlauf").appendChild(el);
     zeigeBlase(el);
+    if (!wartet) speichereChat();
     return el;
   }
+
+  // ---------- Gespräche speichern (nur auf diesem iPhone) ----------
+  // Speicher: { aktiv: id | null, liste: [{ id, tag, zuletzt, titel, blasen, verlauf }] }
+  // "tag" = Tag des Gesprächsbeginns, "zuletzt" = Tag der letzten Nutzung.
+  // An einem neuen Tag beginnt automatisch ein neues Gespräch; das alte bleibt im Archiv.
+  var CHAT_KEY = "reise-gespraeche-v1";
+  var MAX_GESPRAECHE = 40;
+  function datumsSchluessel() {
+    var d = heuteDatum();
+    return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2);
+  }
+  function leseSpeicher() {
+    try {
+      var s = JSON.parse(localStorage.getItem(CHAT_KEY) || "null");
+      if (s && Array.isArray(s.liste)) return s;
+    } catch (e) {}
+    return { aktiv: null, liste: [] };
+  }
+  function schreibeSpeicher(s) {
+    s.liste = s.liste.slice(0, MAX_GESPRAECHE);
+    try { localStorage.setItem(CHAT_KEY, JSON.stringify(s)); } catch (e) {}
+  }
+  function aktivesGespraech(s) {
+    for (var i = 0; i < s.liste.length; i++) if (s.liste[i].id === s.aktiv) return s.liste[i];
+    return null;
+  }
+
+  function speichereChat() {
+    var blasen = [];
+    document.querySelectorAll("#chat-verlauf .blase:not(.wartet)").forEach(function (b) { blasen.push({ c: b.className, h: b.innerHTML }); });
+    var s = leseSpeicher(), g = aktivesGespraech(s);
+    if (blasen.length) {
+      if (!g) {
+        var erste = document.querySelector("#chat-verlauf .blase.ich");
+        g = { id: Date.now(), tag: datumsSchluessel(), titel: erste ? erste.textContent.slice(0, 80) : "Gespräch" };
+        s.aktiv = g.id;
+      } else {
+        s.liste = s.liste.filter(function (x) { return x.id !== g.id; });
+      }
+      g.zuletzt = datumsSchluessel();
+      g.blasen = blasen;
+      g.verlauf = chatVerlauf.slice(-6);
+      s.liste.unshift(g); // zuletzt benutztes Gespräch nach oben
+      schreibeSpeicher(s);
+    }
+    zeigeChatTasten();
+  }
+
+  function ladeChat() {
+    var liste = document.getElementById("chat-verlauf");
+    liste.innerHTML = "";
+    chatVerlauf = [];
+    var s = leseSpeicher(), g = aktivesGespraech(s);
+    if (g && g.zuletzt !== datumsSchluessel()) {
+      // Neuer Tag: neues Gespräch beginnen, das alte bleibt im Archiv
+      s.aktiv = null; schreibeSpeicher(s); g = null;
+    }
+    if (g) {
+      (g.blasen || []).forEach(function (b) {
+        var el = document.createElement("div");
+        el.className = String(b.c).replace(/\s*wartet/, "");
+        el.innerHTML = b.h;
+        liste.appendChild(el);
+      });
+      chatVerlauf = Array.isArray(g.verlauf) ? g.verlauf : [];
+    }
+    zeigeChatTasten();
+  }
+
+  function zeigeChatTasten() {
+    var hatInhalt = !!document.querySelector("#chat-verlauf .blase");
+    var s = leseSpeicher();
+    document.getElementById("chat-neu").hidden = !hatInhalt;
+    // Archiv anzeigen, sobald es ein anderes gespeichertes Gespräch gibt
+    document.getElementById("chat-archiv-knopf").hidden = !s.liste.some(function (x) { return x.id !== s.aktiv; });
+  }
+
+  document.getElementById("chat-neu").addEventListener("click", function () {
+    if (chatBusy) return;
+    var s = leseSpeicher();
+    s.aktiv = null;
+    schreibeSpeicher(s);
+    document.getElementById("chat-verlauf").innerHTML = "";
+    chatVerlauf = [];
+    zeigeChatTasten();
+    window.scrollTo(0, 0);
+  });
+
+  function renderArchiv() {
+    var s = leseSpeicher(), html = "";
+    s.liste.forEach(function (g) {
+      var p = (g.tag || "").split("-"), dt = p.length === 3 ? new Date(+p[0], +p[1] - 1, +p[2]) : null;
+      var anzahl = (g.blasen || []).filter(function (b) { return /\bich\b/.test(b.c); }).length;
+      html += '<div class="card tap gespraech' + (g.id === s.aktiv ? ' aktiv' : '') + '" data-gespraech="' + g.id + '">' +
+              '<div class="text"><p class="label">' + (dt ? esc(langesDatum(dt)) : '') + ' · ' + anzahl + (anzahl === 1 ? ' Frage' : ' Fragen') +
+              (g.id === s.aktiv ? ' · <b>aktuell</b>' : '') + '</p>' +
+              '<p class="titel">' + esc(g.titel || "Gespräch") + '</p></div>' +
+              '<button type="button" class="weg" data-loeschen="' + g.id + '" aria-label="Gespräch löschen">🗑</button></div>';
+    });
+    document.getElementById("archiv-liste").innerHTML = html || '<p>Noch keine früheren Gespräche.</p>';
+  }
+  document.getElementById("archiv-liste").addEventListener("click", function (e) {
+    if (chatBusy) return;
+    var weg = e.target.closest("[data-loeschen]");
+    if (weg) {
+      var wegId = +weg.getAttribute("data-loeschen");
+      var sp = leseSpeicher();
+      var g = sp.liste.filter(function (x) { return x.id === wegId; })[0];
+      if (!g || !window.confirm("Gespräch „" + (g.titel || "Gespräch") + "“ wirklich löschen?")) return;
+      sp.liste = sp.liste.filter(function (x) { return x.id !== wegId; });
+      if (sp.aktiv === wegId) sp.aktiv = null; // aktuelles Gespräch gelöscht: Chat beginnt leer
+      schreibeSpeicher(sp);
+      renderArchiv();
+      return;
+    }
+    var b = e.target.closest("[data-gespraech]");
+    if (!b) return;
+    var s = leseSpeicher(), id = +b.getAttribute("data-gespraech");
+    s.liste.forEach(function (g) { if (g.id === id) g.zuletzt = datumsSchluessel(); }); // gilt jetzt als heute benutzt
+    s.aktiv = id;
+    schreibeSpeicher(s);
+    location.hash = "chat";
+  });
+  // "Passt nicht? Die KI fragen" – auch für gespeicherte Antworten
+  document.getElementById("chat-verlauf").addEventListener("click", function (e) {
+    var k = e.target.closest(".ki-fragen");
+    if (!k || chatBusy) return;
+    var frage = k.getAttribute("data-ki");
+    k.remove();
+    speichereChat();
+    frageOnline(frage);
+  });
   // Anfang einer Nachricht unter die Zurück-Taste scrollen
   function zeigeBlase(el) {
     setTimeout(function () { window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 90); }, 30);
@@ -844,7 +1042,7 @@
       return;
     }
     chatBusy = true; setzeSendenStatus();
-    var warte = blase('<p>Einen Moment, ich frage nach …</p>', "bot");
+    var warte = blase('<p>Einen Moment, ich frage nach …</p>', "bot", "", true);
     var ctrl = window.AbortController ? new AbortController() : null;
     var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 30000);
     fetch(CHAT_URL, {
@@ -863,7 +1061,10 @@
         }
       })
       .catch(function () { warte.innerHTML = '<p>Die Verbindung hat nicht geklappt. Bitte später nochmal versuchen.</p>'; })
-      .then(function () { clearTimeout(timer); chatBusy = false; setzeSendenStatus(); zeigeBlase(warte); });
+      .then(function () {
+        clearTimeout(timer); chatBusy = false; setzeSendenStatus();
+        warte.classList.remove("wartet"); speichereChat(); zeigeBlase(warte);
+      });
   }
 
   function stelleFrage(frage) {
@@ -872,9 +1073,8 @@
     blase(esc(frage), "ich");
     var html = offlineAntwort(frage);
     if (html) {
-      var el = blase(html, "bot", '<button class="ki-fragen" type="button">Passt nicht? Die KI fragen (Internet)</button>');
-      el.querySelector(".ki-fragen").addEventListener("click", function () { this.remove(); frageOnline(frage); });
       chatVerlauf.push({ role: "user", content: frage }, { role: "assistant", content: nurText(html) });
+      blase(html, "bot", '<button class="ki-fragen" type="button" data-ki="' + esc(frage) + '">Passt nicht? Die KI fragen (Internet)</button>');
     } else {
       frageOnline(frage);
     }
@@ -911,6 +1111,8 @@
     document.querySelectorAll(".screen").forEach(function (s) { s.classList.toggle("active", s.id === id); });
     if (id === "heute") renderHeute();
     if (id === "start") renderHeute();
+    if (id === "chat" && !chatBusy) ladeChat(); // aktives Gespräch anzeigen
+    if (id === "archiv") renderArchiv();
     if (id === "hotels") {
       renderHotels();
       var ziel = null;
@@ -967,6 +1169,7 @@
     var id = location.hash.slice(1) || "start";
     if (id === "start" || id === "heute") renderHeute();
     if (id === "hotels") renderHotels();
+    if (id === "chat" && !chatBusy) ladeChat(); // am nächsten Morgen ist das alte Gespräch weg
   });
 
   // ---------- Offline-Betrieb ----------
