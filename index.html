@@ -1015,7 +1015,7 @@
     s.liste.forEach(function (g) { if (g.id === id) g.zuletzt = datumsSchluessel(); }); // gilt jetzt als heute benutzt
     s.aktiv = id;
     schreibeSpeicher(s);
-    location.hash = "chat";
+    geheZu("chat");
   });
   // "Passt nicht? Die KI fragen" – auch für gespeicherte Antworten
   document.getElementById("chat-verlauf").addEventListener("click", function (e) {
@@ -1126,25 +1126,54 @@
     window.scrollTo(0, 0);
   }
 
-  document.addEventListener("click", function (e) {
-    if (e.target.closest("a")) return; // Anruf- und Karten-Links normal öffnen
-    var back = e.target.closest("[data-back]");
-    if (back) {
-      if (history.length > 1) history.back(); else location.hash = "hotels";
-      return;
-    }
-    var karte = e.target.closest("[data-tag]");
-    if (karte) {
-      if (location.hash === "#hotels") hotelScroll = window.scrollY;
-      location.hash = "tag-" + karte.getAttribute("data-tag");
-      return;
-    }
-    var b = e.target.closest("[data-go]");
-    if (!b) return;
-    var ziel = b.getAttribute("data-go");
-    if (ziel === "start") location.hash = ""; else location.hash = ziel;
+  // Seitenwechsel direkt per JavaScript. Die Adresse (#hotels usw.) wird nur zusätzlich
+  // gesetzt, damit die Zurück-Geste funktioniert – wo das nicht erlaubt ist (z. B. in einer
+  // Datei-Vorschau), klappt der Wechsel trotzdem.
+  var aktuelleRoute = location.hash.slice(1) || "start";
+  var stapel = [];          // vorherige Seiten für die Zurück-Taste
+  var adresseOk = true;     // false, wenn der Browser das Ändern der Adresse verbietet
+  function geheZu(route) {
+    route = route || "start";
+    if (route === aktuelleRoute) { zeige(route); return; }
+    // Position in der Hotelliste merken, wenn ein Hotel geöffnet wird
+    hotelScroll = aktuelleRoute === "hotels" && route.indexOf("tag-") === 0 ? window.scrollY : null;
+    stapel.push(aktuelleRoute);
+    aktuelleRoute = route;
+    try { history.pushState({ route: route }, "", route === "start" ? location.pathname + location.search : "#" + route); }
+    catch (err) { adresseOk = false; }
+    zeige(route);
+  }
+  function zurueck() {
+    if (adresseOk && stapel.length) { history.back(); return; } // löst popstate aus
+    var ziel = stapel.pop() || "start";
+    aktuelleRoute = ziel;
+    zeige(ziel);
+  }
+  window.addEventListener("popstate", function () {
+    var route = location.hash.slice(1) || "start";
+    if (stapel.length && stapel[stapel.length - 1] === route) stapel.pop();
+    aktuelleRoute = route;
+    zeige(route);
   });
-  window.addEventListener("hashchange", function () { zeige(location.hash.slice(1) || "start"); });
+  window.addEventListener("hashchange", function () {
+    var route = location.hash.slice(1) || "start";
+    if (route !== aktuelleRoute) { aktuelleRoute = route; zeige(route); }
+  });
+
+  document.addEventListener("click", function (e) {
+    var link = e.target.closest("a");
+    if (link) {
+      // interne Links wie "#notfall" selbst übernehmen, alle anderen (Telefon, Karten) normal öffnen
+      var h = link.getAttribute("href") || "";
+      if (h.charAt(0) === "#") { e.preventDefault(); geheZu(h.slice(1)); }
+      return;
+    }
+    if (e.target.closest("[data-back]")) { zurueck(); return; }
+    var karte = e.target.closest("[data-tag]");
+    if (karte) { geheZu("tag-" + karte.getAttribute("data-tag")); return; }
+    var b = e.target.closest("[data-go]");
+    if (b) geheZu(b.getAttribute("data-go"));
+  });
 
   // ---------- Schriftgröße ----------
   function setzeSchrift(g) {
@@ -1161,12 +1190,12 @@
   setzeSchrift(gespeichert);
 
   // ---------- Start ----------
-  zeige(location.hash.slice(1) || "start");
+  zeige(aktuelleRoute);
   setInterval(uhrStellen, 30000);
   // Beim Zurückkehren in die App (z. B. am nächsten Morgen) neu berechnen
   document.addEventListener("visibilitychange", function () {
     if (document.hidden) return;
-    var id = location.hash.slice(1) || "start";
+    var id = aktuelleRoute;
     if (id === "start" || id === "heute") renderHeute();
     if (id === "hotels") renderHotels();
     if (id === "chat" && !chatBusy) ladeChat(); // am nächsten Morgen ist das alte Gespräch weg
