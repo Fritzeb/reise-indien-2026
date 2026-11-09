@@ -165,6 +165,37 @@
     background: var(--card); color: var(--blue); font: inherit; font-weight: 700; cursor: pointer;
   }
   .schrift button[aria-pressed="true"] { background: var(--blue); color: #fff; }
+  /* Chat */
+  .vorschlaege { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; }
+  .vorschlaege button {
+    min-height: 56px; padding: 8px 10px; border-radius: 12px; border: 2px solid var(--blue);
+    background: var(--card); color: var(--blue); font: inherit; font-size: 0.85em; font-weight: 700;
+    line-height: 1.25; cursor: pointer;
+  }
+  .vorschlaege button:active { background: var(--blue-soft); }
+  .blase { border-radius: 14px; padding: 12px 14px; margin: 10px 0; }
+  .blase.ich { background: var(--blue); color: #fff; margin-left: 15%; }
+  .blase.bot { background: var(--card); border: 2px solid var(--line); margin-right: 5%; }
+  .blase.bot p { margin: 0 0 8px; }
+  .blase.bot p:last-child { margin-bottom: 0; }
+  .blase .quelle { font-size: 0.75em; color: var(--muted); margin-top: 8px; }
+  .blase .ki-fragen {
+    margin-top: 10px; min-height: 44px; padding: 6px 12px; border-radius: 10px;
+    border: 2px solid var(--line); background: var(--bg); color: var(--muted);
+    font: inherit; font-size: 0.75em; cursor: pointer;
+  }
+  .blase .aktionen { margin-top: 10px; }
+  #chat-form { margin-top: 16px; padding: 8px 0 12px; }
+  #chat-eingabe {
+    width: 100%; min-height: 72px; margin-top: 4px; padding: 12px; border-radius: 12px;
+    border: 2px solid var(--blue); font: inherit; resize: vertical; background: var(--card); color: var(--text);
+  }
+  .senden {
+    width: 100%; min-height: 60px; margin-top: 8px; border: 0; border-radius: 14px;
+    background: var(--blue); color: #fff; font: inherit; font-weight: 700; cursor: pointer;
+  }
+  .senden:disabled { opacity: 0.5; }
+
   .uhr { display: flex; gap: 12px; margin-top: 12px; }
   .uhr > div { flex: 1; background: var(--card); border: 2px solid var(--line); border-radius: 12px; padding: 10px 12px; }
   .uhr .zeit { font-size: 1.35em; font-weight: 800; white-space: nowrap; margin: 0; }
@@ -183,8 +214,10 @@
     <button class="tile" data-go="hotels"><span class="ico">🏨</span><span>Alle Hotels<span class="sub">Reiseroute Tag für Tag</span></span></button>
     <button class="tile" data-go="fluege"><span class="ico">✈️</span><span>Flüge<span class="sub">Hinflug und Rückflug</span></span></button>
     <button class="tile notfall" data-go="notfall"><span class="ico">☎️</span><span>Notfall &amp; Telefon<span class="sub">Reiseleitung anrufen</span></span></button>
+    <button class="tile" data-go="chat"><span class="ico">💬</span><span>Frage stellen<span class="sub">Fragen zur Reise und mehr</span></span></button>
     <button class="tile" data-go="gruppe"><span class="ico">👥</span><span>Gruppe<span class="sub">Reiseleiter und Mitreisende</span></span></button>
     <button class="tile" data-go="infos"><span class="ico">ℹ️</span><span>Wichtige Hinweise<span class="sub">Regeln, Gepäck, Krankheit</span></span></button>
+    <a class="tile" href="https://pass.telekom.de" target="_blank" rel="noopener"><span class="ico">📶</span><span>Mobile Daten<span class="sub">Telekom-Datenvolumen ansehen und buchen (WLAN ausschalten)</span></span></a>
   </div>
 
   <p class="label" style="margin-top:28px">Schriftgröße</p>
@@ -215,6 +248,29 @@
 <section id="hotel" class="screen">
   <button class="back" data-back="1">◀ Zurück</button>
   <div id="hotel-inhalt"></div>
+</section>
+
+<!-- ============ CHAT ============ -->
+<section id="chat" class="screen">
+  <button class="back" data-go="start">◀ Zurück zur Übersicht</button>
+  <h1>Frage stellen</h1>
+  <p class="small muted">Fragen zur Reise beantworte ich sofort, auch ohne Internet. Andere Fragen schicke ich kurz übers Internet an eine KI.</p>
+
+  <div class="vorschlaege">
+    <button data-frage="Wo schlafe ich heute?">Wo schlafe ich heute?</button>
+    <button data-frage="Was machen wir heute?">Was machen wir heute?</button>
+    <button data-frage="Was machen wir morgen?">Was machen wir morgen?</button>
+    <button data-frage="Wann ist der Rückflug?">Wann ist der Rückflug?</button>
+  </div>
+
+  <div id="chat-verlauf" aria-live="polite"></div>
+
+  <form id="chat-form" autocomplete="off">
+    <label for="chat-eingabe" class="label">Ihre Frage</label>
+    <textarea id="chat-eingabe" rows="2" placeholder="z. B. Was heißt danke auf Hindi?"></textarea>
+    <button type="submit" class="senden">Frage senden</button>
+    <p class="small muted" style="margin:8px 0 0">Tipp: Auf der Tastatur das <b>Mikrofon</b> antippen und die Frage einfach sprechen.</p>
+  </form>
 </section>
 
 <!-- ============ FLÜGE ============ -->
@@ -652,6 +708,198 @@
     document.getElementById("hotel-liste").innerHTML = html;
   }
 
+  // ---------- Chat ----------
+  // Fragen zur Reise werden offline aus den Daten oben beantwortet.
+  // Nur wenn nichts passt, geht die Frage übers Internet an die KI (Supabase Edge Function mit Claude).
+  var CHAT_URL = "https://owtmigdfkwuutfseirni.supabase.co/functions/v1/reise-chat";
+  var chatVerlauf = []; // { role: "user" | "assistant", content: Text } – nur für die KI
+  var chatBusy = false;
+
+  function norm(s) {
+    return s.toLowerCase().replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss");
+  }
+  function telLink(tel, text) {
+    return '<a class="call" href="tel:' + tel + '">📞 ' + esc(text) + '<span class="nr">' + telAnzeige(tel) + '</span></a>';
+  }
+
+  // Welcher Reisetag ist gemeint? Gibt den Index in TAGE zurück (oder -1)
+  function gemeinterTag(f) {
+    var m = /tag\s*(\d{1,2})\b/.exec(f);
+    if (m && +m[1] >= 1 && +m[1] <= TAGE.length) return +m[1] - 1;
+    m = /\b(\d{1,2})\.\s*(\d{1,2})\./.exec(f);
+    if (m) {
+      for (var i = 0; i < TAGE.length; i++) {
+        var dt = parse(TAGE[i].d);
+        if (dt.getDate() === +m[1] && dt.getMonth() + 1 === +m[2]) return i;
+      }
+    }
+    // Orts- oder Hotelname
+    for (var j = 0; j < TAGE.length; j++) {
+      var tg = TAGE[j];
+      if (!tg.h) continue;
+      var h = HOTELS[tg.h];
+      if (f.indexOf(norm(h.ort)) >= 0 || f.indexOf(norm(h.name.replace(" (Tageszimmer)", ""))) >= 0) return j;
+    }
+    // Relativ zu heute: heute / morgen / übermorgen / gestern
+    var plus = /uebermorgen/.test(f) ? 2 : (/morgen/.test(f) && !/heute morgen/.test(f)) ? 1 : /gestern/.test(f) ? -1 : 0;
+    var hd = heuteDatum(), start = parse(TAGE[0].d);
+    var idx = tageZwischen(start, hd) + plus; // Index des gemeinten Tages
+    if (idx < 0) return -2;                  // vor der Reise
+    return idx < TAGE.length ? idx : -3;     // nach der Reise
+  }
+
+  function vorDerReiseText() {
+    var n = tageZwischen(heuteDatum(), parse(TAGE[0].d));
+    return '<p>Die Reise beginnt am <b>Samstag, 21. November</b>' + (n > 0 ? ' – in ' + n + (n === 1 ? ' Tag' : ' Tagen') : '') + '.</p>';
+  }
+
+  function hotelAntwort(i) {
+    var tag = TAGE[i];
+    if (!tag.h) return '<p>Am ' + esc(langesDatum(parse(tag.d))) + ' ist der Heimflug. ' + esc(tag.prog) + '</p>';
+    var h = HOTELS[tag.h];
+    var html = '<p><b>Tag ' + tag.t + ', ' + esc(langesDatum(parse(tag.d))) + ':</b> ' + esc(h.ort) + '</p>';
+    if (h.zelt) {
+      html += '<p>Übernachtung im <b>Zeltcamp</b> in der Wüste. Im Camp gibt es keine Toiletten oder Duschen.</p>';
+    } else {
+      html += '<p><b>' + esc(h.name) + '</b><br>' + esc(h.adresse).replace(/\n/g, "<br>") + '</p>';
+    }
+    html += aktionen(h);
+    html += '<p style="margin-top:10px"><a href="#tag-' + tag.t + '">Mehr zum Hotel ›</a></p>';
+    return html;
+  }
+  function programmAntwort(i) {
+    var tag = TAGE[i];
+    return '<p><b>Tag ' + tag.t + ', ' + esc(langesDatum(parse(tag.d))) + ' – ' + esc(ortVon(tag)) + ':</b></p><p>' + esc(tag.prog) + '</p>';
+  }
+
+  // Gibt HTML zurück, wenn die Frage offline beantwortet werden kann, sonst null
+  function offlineAntwort(frage) {
+    var f = norm(frage);
+    var i;
+    if (/notfall|hilfe|notruf|arzt|krank|unfall|verletz|polizei|reiseleit|suraj|shukla|nicht gut|schlecht|schmerz|fieber|durchfall|uebel|schwindel|gestuerzt|verlaufen|verloren|pass weg/.test(f)) {
+      return '<p>Bei Problemen zuerst die <b>Reiseleitung</b> anrufen:</p>' + telLink("+919811682460", "Reiseleitung anrufen").replace('class="call"', 'class="call rot"') +
+             '<p style="margin-top:10px">Bei Lebensgefahr: indischer Notruf <a href="tel:112"><b>112</b></a>.</p><p><a href="#notfall">Alle Notfallnummern ›</a></p>';
+    }
+    if (/karte.*(sperr|verlor|gestohl|weg)|sperr.*karte|kreditkarte|ec.?karte/.test(f)) {
+      return '<p>Karten sperren über den zentralen Sperr-Notruf:</p>' + telLink("+49116116", "Karte sperren");
+    }
+    if (/flug|abflug|landung|check.?in|einchecken|gepaeck|koffer|lufthansa|buchungsnummer|flughafen/.test(f)) {
+      return '<p><b>Hinflug LH 760:</b> Sa 21.11., ab Frankfurt 13:20, an Delhi 01:35 (Ortszeit).</p>' +
+             '<p><b>Rückflug LH 761:</b> Fr 11.12., ab Delhi 03:35 nachts, an Frankfurt 07:55.</p>' +
+             '<p>Buchungsnummer <b>YLYYSQ</b>, 1 Koffer bis 23 kg. Für den Rückflug vorher online einchecken – die Reiseleitung hilft.</p>' +
+             '<p><a href="#fluege">Alle Flugdetails ›</a></p>';
+    }
+    if (/uhrzeit|zeitunterschied|zeitverschiebung|wie spaet|wieviel uhr|wie viel uhr/.test(f)) {
+      var n = new Date(), opt = { hour: "2-digit", minute: "2-digit" }, de = "";
+      try { de = n.toLocaleTimeString("de-DE", Object.assign({ timeZone: "Europe/Berlin" }, opt)); } catch (e) {}
+      return '<p>Hier ist es <b>' + n.toLocaleTimeString("de-DE", opt) + ' Uhr</b>' + (de ? ', in Deutschland <b>' + de + ' Uhr</b>' : '') + '.</p>' +
+             '<p>Indien ist Deutschland im Winter <b>4½ Stunden voraus</b>.</p>';
+    }
+    if (/zimmer.*(partner|mit wem|teil)|mit wem.*zimmer|arndt/.test(f)) {
+      return '<p>Das Zimmer teilst du mit <b>Arndt P.</b> – bei der Kamelsafari auch das Zelt.</p>';
+    }
+    if (/wie viele tage|wieviele tage|welcher tag|der wievielte/.test(f)) {
+      i = aktuellerIndex();
+      return i >= 0 ? '<p>Heute ist <b>Tag ' + TAGE[i].t + ' von 21</b>. Noch ' + (21 - TAGE[i].t) + ' Tage bis zum Heimflug.</p>' : vorDerReiseText();
+    }
+    var istHotel = /hotel|schlaf|uebernacht|unterkunft|adresse|wo (bin|sind|wohn)|zelt|camp/.test(f);
+    var istProg = /programm|was mach|was steht|was ist (heute|morgen)|was passiert|ausflug|tagesplan|plan fuer|wanderung|ablauf|was gibt es/.test(f);
+    if (istHotel || istProg) {
+      i = gemeinterTag(f);
+      if (i === -2) return vorDerReiseText() + '<p>Die erste Nacht ist im <b>Hotel Regent Grand</b> in Delhi.</p>';
+      if (i < 0) return '<p>Dieser Tag gehört nicht mehr zur Reise.</p>';
+      return (istHotel ? hotelAntwort(i) : '') + (istProg ? programmAntwort(i) : '');
+    }
+    // Nur ein Ortsname, z. B. "Jaipur?"
+    if (f.split(/\s+/).length <= 3) {
+      i = gemeinterTag(f);
+      if (i >= 0 && /[a-z]/.test(f) && !/heute|morgen|gestern/.test(f)) return hotelAntwort(i) + programmAntwort(i);
+    }
+    return null;
+  }
+
+  function nurText(html) { var d = document.createElement("div"); d.innerHTML = html; return (d.textContent || "").replace(/\s+/g, " ").trim(); }
+
+  function blase(html, wer, extra) {
+    var el = document.createElement("div");
+    el.className = "blase " + wer;
+    el.innerHTML = html + (extra || "");
+    document.getElementById("chat-verlauf").appendChild(el);
+    zeigeBlase(el);
+    return el;
+  }
+  // Anfang einer Nachricht unter die Zurück-Taste scrollen
+  function zeigeBlase(el) {
+    setTimeout(function () { window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 90); }, 30);
+  }
+
+  function heuteBeschreibung() {
+    var i = aktuellerIndex(), s = langesDatum(heuteDatum());
+    return i >= 0 ? s + ", Tag " + TAGE[i].t + " von 21 in " + ortVon(TAGE[i]) : s;
+  }
+
+  function frageOnline(frage) {
+    if (!navigator.onLine) {
+      blase('<p>Gerade gibt es <b>kein Internet</b>. Fragen zu Hotels, Programm, Flügen und Notfall kann ich trotzdem beantworten – für alles andere bitte später nochmal fragen oder die Reiseleitung fragen.</p>', "bot");
+      return;
+    }
+    chatBusy = true; setzeSendenStatus();
+    var warte = blase('<p>Einen Moment, ich frage nach …</p>', "bot");
+    var ctrl = window.AbortController ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 30000);
+    fetch(CHAT_URL, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ frage: frage, verlauf: chatVerlauf.slice(-6), heute: heuteBeschreibung() }),
+      signal: ctrl ? ctrl.signal : undefined
+    }).then(function (r) { return r.json().catch(function () { return {}; }); })
+      .then(function (d) {
+        if (d && d.antwort) {
+          warte.innerHTML = d.antwort.split(/\n{2,}/).map(function (p) { return '<p>' + esc(p).replace(/\n/g, "<br>") + '</p>'; }).join("") +
+                            '<p class="quelle">🌐 Antwort aus dem Internet (KI). Bei Wichtigem lieber die Reiseleitung fragen.</p>';
+          chatVerlauf.push({ role: "user", content: frage }, { role: "assistant", content: d.antwort });
+        } else {
+          warte.innerHTML = '<p>' + esc((d && d.fehler) || "Der Chat ist gerade nicht erreichbar.") + '</p>';
+        }
+      })
+      .catch(function () { warte.innerHTML = '<p>Die Verbindung hat nicht geklappt. Bitte später nochmal versuchen.</p>'; })
+      .then(function () { clearTimeout(timer); chatBusy = false; setzeSendenStatus(); zeigeBlase(warte); });
+  }
+
+  function stelleFrage(frage) {
+    frage = (frage || "").trim();
+    if (!frage || chatBusy) return;
+    blase(esc(frage), "ich");
+    var html = offlineAntwort(frage);
+    if (html) {
+      var el = blase(html, "bot", '<button class="ki-fragen" type="button">Passt nicht? Die KI fragen (Internet)</button>');
+      el.querySelector(".ki-fragen").addEventListener("click", function () { this.remove(); frageOnline(frage); });
+      chatVerlauf.push({ role: "user", content: frage }, { role: "assistant", content: nurText(html) });
+    } else {
+      frageOnline(frage);
+    }
+  }
+
+  function setzeSendenStatus() {
+    var b = document.querySelector(".senden");
+    if (b) { b.disabled = chatBusy; b.textContent = chatBusy ? "Bitte warten …" : "Frage senden"; }
+  }
+
+  document.getElementById("chat-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var ein = document.getElementById("chat-eingabe");
+    var f = ein.value;
+    ein.value = "";
+    ein.blur();
+    stelleFrage(f);
+  });
+  document.getElementById("chat-eingabe").addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); document.getElementById("chat-form").requestSubmit ? document.getElementById("chat-form").requestSubmit() : document.querySelector(".senden").click(); }
+  });
+  document.querySelectorAll("[data-frage]").forEach(function (b) {
+    b.addEventListener("click", function () { stelleFrage(b.getAttribute("data-frage")); });
+  });
+
   // ---------- Navigation ----------
   var hotelScroll = null;
   function zeige(id) {
@@ -723,6 +971,11 @@
 
   // ---------- Offline-Betrieb ----------
   if ("serviceWorker" in navigator && location.protocol !== "file:") {
+    // Wenn eine neue App-Version installiert wurde, einmal neu laden (nicht beim allerersten Start)
+    var hatteVersion = !!navigator.serviceWorker.controller, neuGeladen = false;
+    navigator.serviceWorker.addEventListener("controllerchange", function () {
+      if (hatteVersion && !neuGeladen) { neuGeladen = true; location.reload(); }
+    });
     navigator.serviceWorker.register("sw.js").catch(function () {});
   }
 })();
