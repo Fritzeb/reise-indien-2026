@@ -253,6 +253,33 @@
   }
   .senden:disabled { opacity: 0.5; }
 
+  /* Kluger Fakt */
+  .startkopf { display: flex; align-items: center; gap: 12px; }
+  .startkopf > div { flex: 1; min-width: 0; }
+  .fakt-knopf {
+    flex: none; width: 56px; height: 56px; border-radius: 50%; border: 3px solid var(--blue);
+    background: var(--card); font-size: 1.7em; line-height: 1; cursor: pointer; padding: 0;
+  }
+  .fakt-knopf:active { background: var(--blue-soft); }
+  .overlay {
+    position: fixed; inset: 0; z-index: 50; background: rgba(0, 0, 0, 0.55);
+    display: flex; align-items: center; justify-content: center;
+    padding: calc(env(safe-area-inset-top) + 16px) 16px calc(env(safe-area-inset-bottom) + 16px);
+  }
+  .overlay[hidden] { display: none; }
+  .overlay-karte {
+    width: 100%; max-width: 520px; max-height: 100%; overflow-y: auto;
+    background: var(--card); border-radius: 18px; padding: 20px; border: 3px solid #E0A93A;
+  }
+  .overlay-karte h2 { margin: 0 0 10px; }
+  .overlay-karte #fakt-text { font-size: 1.1em; line-height: 1.5; }
+  .overlay-tasten { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; margin-top: 8px; }
+  .overlay-tasten button {
+    min-height: 60px; border-radius: 14px; border: 2px solid var(--blue); background: var(--card);
+    color: var(--blue); font: inherit; font-weight: 700; cursor: pointer;
+  }
+  .overlay-tasten .primaer { background: var(--blue); color: #fff; }
+
   .uhr { display: flex; gap: 12px; margin-top: 12px; }
   .uhr > div { flex: 1; min-width: 0; background: var(--card); border: 2px solid var(--line); border-radius: 12px; padding: 10px 12px; }
   .uhr .zeit { font-size: 1.35em; font-weight: 800; white-space: nowrap; margin: 0; }
@@ -263,8 +290,13 @@
 
 <!-- ============ START ============ -->
 <section id="start" class="screen active">
-  <h1>Indien-Reise</h1>
-  <p class="muted" style="margin:0">Rajasthan · 21.11. bis 11.12.2026</p>
+  <div class="startkopf">
+    <div>
+      <h1>Indien-Reise</h1>
+      <p class="muted" style="margin:0">Rajasthan · 21.11. bis 11.12.2026</p>
+    </div>
+    <button type="button" class="fakt-knopf" id="fakt-knopf" aria-label="Klugen Fakt zu Land und Leuten anzeigen">🤓</button>
+  </div>
 
   <div class="tiles">
     <button class="tile heute" data-go="heute"><span class="ico">📅</span><span>Heute<span class="sub" id="heute-sub">Wo bin ich, welches Hotel?</span></span></button>
@@ -532,6 +564,19 @@
 
 </main>
 
+<!-- ============ KLUGER FAKT (Overlay) ============ -->
+<div id="fakt-overlay" class="overlay" hidden>
+  <div class="overlay-karte" role="dialog" aria-modal="true" aria-labelledby="fakt-titel">
+    <p class="label" id="fakt-passend"></p>
+    <h2 id="fakt-titel">🤓 Wusstest du schon …?</h2>
+    <p id="fakt-text"></p>
+    <div class="overlay-tasten">
+      <button type="button" id="fakt-noch">🔄 Noch einer</button>
+      <button type="button" id="fakt-zu" class="primaer">Schließen</button>
+    </div>
+  </div>
+</div>
+
 <script>
 (function () {
   // ---------- Reisedaten ----------
@@ -654,6 +699,101 @@
     { titel: "Pass fotografieren", text: "Pass und Visum fotografieren und auf dem Handy speichern. Eine Papierkopie getrennt vom Original im Handgepäck hilft im Notfall." },
     { titel: "Schon mal üben", text: "„Namaste“ (na-mas-tee) zur Begrüßung und „Dhanyavaad“ (dan-ja-wad) für danke – damit kommt man in Indien schon weit." }
   ];
+  // ---------- Kluge Fakten (🤓-Knopf) ----------
+  // "o" = passende Orte/Themen. Ohne "o" = allgemeiner Fakt.
+  // Nur belegte Fakten; Legenden und Überlieferungen sind als solche gekennzeichnet.
+  var FAKTEN = [
+    // Allgemein: Indien
+    { t: "Seit 2023 hat Indien laut UN mehr Einwohner als China – über 1,4 Milliarden. Ungefähr jeder sechste Mensch der Erde ist Inder." },
+    { t: "Ganz Indien hat nur eine einzige Zeitzone – obwohl das Land von West nach Ost fast 3.000 km breit ist. Im Nordosten wird es deshalb im Winter schon vor 17 Uhr dunkel." },
+    { t: "Die indische Uhrzeit liegt eine halbe Stunde „schief“: UTC plus 5½ Stunden. Darum ist der Unterschied zu Deutschland im Winter genau 4½ Stunden." },
+    { t: "Schach kommt aus Indien: Den Vorläufer „Chaturanga“ spielte man hier schon vor rund 1.500 Jahren." },
+    { t: "Die Null als richtige Zahl, mit der man rechnen kann, stammt aus Indien. Der Mathematiker Brahmagupta schrieb im Jahr 628 die ersten Rechenregeln dafür auf." },
+    { t: "„Shampoo“ ist ein Hindi-Wort: „chāmpo“ heißt ungefähr „massiere!“. Auch „Dschungel“ (jangal), „Bungalow“ und „Pyjama“ sind über Indien zu uns gekommen." },
+    { t: "Das „Leiterspiel“ (Schlangen und Leitern) ist ein altes indisches Spiel namens „Moksha Patam“: Gute Taten führen die Leiter hinauf, schlechte die Schlange hinunter." },
+    { t: "Bis ins 18. Jahrhundert kamen fast alle Diamanten der Welt aus Indien – auch der berühmte „Koh-i-Noor“, der heute zu den britischen Kronjuwelen gehört." },
+    { t: "In Indien leben mehr Vegetarier als in jedem anderen Land der Welt." },
+    { t: "Die indische Eisenbahn hat rund 1,2 Millionen Beschäftigte und gehört damit zu den größten Arbeitgebern der Welt." },
+    { t: "Indien dreht mehr Spielfilme als jedes andere Land. „Bollywood“ ist übrigens nur die Hindi-Filmindustrie aus Mumbai – dem früheren Bombay." },
+    { t: "Auf jedem Rupie-Geldschein steht der Wert in 17 Sprachen: groß auf Hindi und Englisch, und an der Seite in 15 weiteren." },
+    { t: "Bei der Parlamentswahl 2024 durften rund 970 Millionen Menschen wählen – die größte Wahl der Geschichte. Gewählt wurde in sieben Etappen über sechs Wochen." },
+    { t: "Mahatma Gandhi wurde fünfmal für den Friedensnobelpreis nominiert – bekommen hat er ihn nie." },
+    { t: "Die linke Hand ist in Indien die „Toilettenhand“: Traditionell wird mit Wasser statt Papier gereinigt. Deshalb isst man, grüßt und gibt Geld immer mit der rechten Hand." },
+    { t: "Auf fast jedem indischen Lastwagen steht hinten „Horn OK Please“. Hupen ist hier ausdrücklich erwünscht und heißt einfach: „Achtung, ich bin da!“" },
+    { t: "„Jugaad“ heißt auf Hindi die geniale Notlösung – zum Beispiel ein Moped, das mit einem Holzbrett zum Lieferwagen wird. Klebeband und Draht sind dabei Ehrensache." },
+    { t: "Indien ist der größte Milchproduzent der Welt – dank Kühen und vor allem Wasserbüffeln." },
+    { t: "Indien ist nach China der zweitgrößte Teeproduzent der Welt. Richtig populär wurde der Tee bei den Indern selbst aber erst im 20. Jahrhundert – auch durch Werbung der britischen Teeindustrie." },
+    { t: "In Indien leben rund drei Viertel aller wilden Tiger der Welt – bei der Zählung 2022 waren es über 3.600." },
+    { t: "Rajasthan ist der flächengrößte Bundesstaat Indiens – fast so groß wie ganz Deutschland. Der Name bedeutet „Land der Könige“." },
+    { t: "Kühe sind im Hinduismus heilig und laufen frei durch die Straßen. In Rajasthan ist das Schlachten von Kühen verboten – und der Bundesstaat hatte 2014 als erster in Indien sogar ein eigenes Kuh-Ministerium." },
+    // Kamele und Wüste
+    { o: ["Kamel"], t: "Im Kamelhöcker ist kein Wasser, sondern Fett – davon kann das Tier tagelang zehren. Ein durstiges Kamel trinkt dafür über 100 Liter in wenigen Minuten." },
+    { o: ["Kamel"], t: "Wenn ein Kamel „spuckt“, ist das gar keine Spucke: Es würgt Mageninhalt hoch und schleudert ihn mit Speichel vermischt los. Also besser nicht von vorne ärgern." },
+    { o: ["Kamel"], t: "Kamele haben drei Augenlider und zwei Reihen Wimpern – perfekt gegen Sandstürme. Die Nasenlöcher können sie ganz zumachen." },
+    { o: ["Kamel"], t: "Das Kamel ist seit 2014 das offizielle Staatstier von Rajasthan." },
+    { o: ["Wüste"], t: "Die Wüste Thar gehört zu den am dichtesten besiedelten Wüsten der Welt – hier leben Millionen Menschen mit ihren Herden." },
+    // Orte
+    { o: ["Pushkar"], t: "Auf dem Pushkar-Kamelmarkt wird nicht nur gehandelt: Es gibt auch einen Wettbewerb um den längsten Schnurrbart." },
+    { o: ["Pushkar"], t: "Der Legende nach ließ Gott Brahma hier eine Lotusblüte fallen – an der Stelle entstand der heilige See von Pushkar." },
+    { o: ["Jaisalmer"], t: "Das Fort von Jaisalmer ist der Star im indischen Kultfilm „Sonar Kella“ („Die goldene Festung“) von Regisseur Satyajit Ray aus dem Jahr 1974." },
+    { o: ["Jodhpur"], t: "Die Reithose „Jodhpur“ ist nach dieser Stadt benannt: Polospieler aus Jodhpur machten sie Ende des 19. Jahrhunderts in England bekannt." },
+    { o: ["Jodhpur"], t: "Im Mehrangarh-Fort von Jodhpur wurden Szenen für den Batman-Film „The Dark Knight Rises“ (2012) gedreht." },
+    { o: ["Kumbhalgarh"], t: "Die Mauer von Kumbhalgarh ist so breit, dass angeblich acht Pferde nebeneinander darauf reiten konnten." },
+    { o: ["Ranakpur"], t: "Jain-Mönche nehmen Gewaltlosigkeit sehr ernst: Manche tragen ein Tuch vor dem Mund, um keine Insekten zu verschlucken, und fegen den Weg vor sich frei, um nichts zu zertreten." },
+    { o: ["Udaipur"], t: "Udaipur wird wegen seiner Seen und Paläste auch das „Venedig des Ostens“ genannt. Am Stadtpalast haben mehrere Herrscher rund 400 Jahre lang weitergebaut." },
+    { o: ["Bundi"], t: "Bundi hat über 50 alte Stufenbrunnen – tiefe Treppenschächte, in denen früher das Regenwasser für die Trockenzeit gesammelt wurde." },
+    { o: ["Sawai Madhopur"], t: "Die Tigerin „Machli“ aus Ranthambore galt als meistfotografierter Tiger der Welt. Sie wurde rund 19 Jahre alt – für einen wilden Tiger ein Rekord." },
+    { o: ["Jaipur"], t: "Jaipur wurde 1727 als eine der ersten geplanten Städte Indiens gegründet – mit schnurgeraden Straßen im Raster." },
+    { o: ["Jaipur"], t: "Die große Sonnenuhr im Jantar Mantar in Jaipur ist rund 27 Meter hoch und zeigt die Zeit auf etwa 2 Sekunden genau an." },
+    { o: ["Bharatpur"], t: "Im heutigen Vogelparadies von Bharatpur schoss 1938 eine Jagdgesellschaft um den britischen Vizekönig an einem Tag 4.273 Vögel – eine Tafel erinnert noch daran. Heute ist die Jagd dort streng verboten." },
+    { o: ["Agra"], t: "Die vier Minarette am Taj Mahal stehen leicht schräg nach außen – bei einem Erdbeben würden sie vom Grabmal weg fallen und nicht darauf." },
+    { o: ["Agra"], t: "Shah Jahan, der Bauherr des Taj Mahal, wurde von seinem eigenen Sohn im Roten Fort von Agra gefangen gesetzt. Von dort konnte er bis zu seinem Tod auf das Taj Mahal schauen." },
+    { o: ["Agra"], t: "Der weiße Marmor des Taj Mahal stammt aus Makrana in Rajasthan." },
+    { o: ["Delhi"], t: "Die Eisensäule in Delhi ist rund 1.600 Jahre alt und rostet trotzdem kaum – Forscher erklären das mit der besonderen Zusammensetzung des Eisens und einer schützenden Schicht." },
+    { o: ["Delhi"], t: "Der Qutb Minar in Delhi ist mit rund 73 Metern das höchste Ziegel-Minarett der Welt." }
+  ];
+  var FAKT_KEY = "reise-fakten-gesehen-v1";
+
+  // Passende Themen für heute: Ort des Tages, dazu Kamel/Wüste während der Safari
+  function heutigeThemen() {
+    var i = aktuellerIndex();
+    if (i < 0) return [];
+    var t = TAGE[i], themen = [ortVon(t)];
+    if (t.t >= 3 && t.t <= 6) themen.push("Kamel");
+    if (t.t >= 4 && t.t <= 7) themen.push("Wüste");
+    return themen;
+  }
+  function waehleFakt() {
+    var gesehen = [];
+    try { gesehen = JSON.parse(localStorage.getItem(FAKT_KEY) || "[]") || []; } catch (e) {}
+    var themen = heutigeThemen();
+    var neu = function (n) { return gesehen.indexOf(n) < 0; };
+    var alle = FAKTEN.map(function (f, n) { return n; });
+    var passend = alle.filter(function (n) { return FAKTEN[n].o && FAKTEN[n].o.some(function (o) { return themen.indexOf(o) >= 0; }) && neu(n); });
+    var allgemein = alle.filter(function (n) { return !FAKTEN[n].o && neu(n); });
+    var nimm;
+    if (passend.length && (Math.random() < 0.65 || !allgemein.length)) nimm = passend;
+    else if (allgemein.length) nimm = allgemein;
+    else { gesehen = []; nimm = alle.filter(function (n) { return !FAKTEN[n].o; }); } // alles gesehen: von vorn
+    var n = nimm[Math.floor(Math.random() * nimm.length)];
+    gesehen.push(n);
+    try { localStorage.setItem(FAKT_KEY, JSON.stringify(gesehen)); } catch (e) {}
+    var f = FAKTEN[n], passtZu = f.o ? f.o.filter(function (o) { return themen.indexOf(o) >= 0; })[0] : null;
+    return { text: f.t, passend: passtZu };
+  }
+  function zeigeFakt() {
+    var f = waehleFakt();
+    document.getElementById("fakt-text").textContent = f.text;
+    document.getElementById("fakt-passend").textContent = f.passend ? "Passt zu heute: " + f.passend : "Land und Leute";
+    document.getElementById("fakt-overlay").hidden = false;
+  }
+  function schliesseFakt() { document.getElementById("fakt-overlay").hidden = true; }
+  document.getElementById("fakt-knopf").addEventListener("click", zeigeFakt);
+  document.getElementById("fakt-noch").addEventListener("click", zeigeFakt);
+  document.getElementById("fakt-zu").addEventListener("click", schliesseFakt);
+  document.getElementById("fakt-overlay").addEventListener("click", function (e) { if (e.target === this) schliesseFakt(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") schliesseFakt(); });
+
   // ---------- Checklisten vor dem Flug (Haken werden nur auf diesem iPhone gespeichert) ----------
   var CHECKLISTEN = {
     hin: {
