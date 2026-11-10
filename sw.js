@@ -1,6 +1,6 @@
 // Offline-Speicher für die Reise-App.
 // Bei Änderungen an der App die Versionsnummer erhöhen.
-var CACHE = "indien-reise-v22";
+var CACHE = "indien-reise-v24";
 var DATEIEN = [
   "./",
   "./index.html",

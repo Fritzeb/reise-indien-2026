@@ -253,6 +253,15 @@
   }
   .senden:disabled { opacity: 0.5; }
 
+  /* Version und Update */
+  .version-zeile { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+  .update-knopf {
+    min-height: 44px; padding: 6px 14px; border-radius: 10px; border: 2px solid var(--blue);
+    background: var(--card); color: var(--blue); font: inherit; font-size: 0.85em; font-weight: 700; cursor: pointer;
+  }
+  .update-knopf:disabled { opacity: 0.5; }
+  .version-tasten { display: flex; gap: 8px; flex-wrap: wrap; }
+
   /* Kluger Fakt */
   .startkopf { display: flex; align-items: center; gap: 12px; }
   .startkopf > div { flex: 1; min-width: 0; }
@@ -367,6 +376,14 @@
     <button data-size="sehrgross" style="font-size:1.45em">A</button>
   </div>
   <p class="small muted" style="margin-top:20px">Funktioniert ohne Internet. Nur die Navigation mit Google Maps braucht Internet oder eine vorher geladene Offline-Karte. Stand der Reiseunterlagen: 31.10.2026 (Wikinger Reisen, Reise 3310, Vorgang 1160860).</p>
+  <div class="version-zeile">
+    <span class="small muted">App-Version <b id="app-version">–</b></span>
+    <span class="version-tasten">
+      <button type="button" id="app-teilen" class="update-knopf">🔗 App teilen</button>
+      <button type="button" id="app-update" class="update-knopf">🔄 Aktualisieren</button>
+    </span>
+  </div>
+  <p class="small muted" id="update-status" style="margin:6px 0 0" aria-live="polite"></p>
 </section>
 
 <!-- ============ HEUTE ============ -->
@@ -1830,6 +1847,77 @@
     if (id === "start" || id === "heute") renderHeute();
     if (id === "hotels") renderHotels();
     if (id === "chat" && !chatBusy) ladeChat(); // am nächsten Morgen ist das alte Gespräch weg
+  });
+
+  // ---------- Version und Update ----------
+  // Die Versionsnummer steht nur in sw.js ("indien-reise-vNN") und wird von dort gelesen.
+  function versionAus(text) { var m = /indien-reise-v(\d+)/.exec(text || ""); return m ? m[1] : null; }
+  function zeigeVersion() {
+    fetch("sw.js").then(function (r) { return r.text(); }).then(function (t) {
+      var v = versionAus(t);
+      if (v) document.getElementById("app-version").textContent = v;
+    }).catch(function () {});
+  }
+  zeigeVersion();
+
+  // Link zur App in die Zwischenablage kopieren (immer die öffentliche Adresse)
+  var APP_LINK = "https://fritzeb.github.io/reise-indien-2026/";
+  document.getElementById("app-teilen").addEventListener("click", function () {
+    var status = document.getElementById("update-status");
+    var fertig = function () { status.textContent = "✅ Link kopiert: " + APP_LINK + " – jetzt z. B. in WhatsApp einfügen."; };
+    var alternativ = function () {
+      // Ersatzweg für ältere Browser: unsichtbares Textfeld markieren und kopieren
+      var feld = document.createElement("textarea");
+      feld.value = APP_LINK; feld.setAttribute("readonly", ""); feld.style.position = "fixed"; feld.style.opacity = "0";
+      document.body.appendChild(feld); feld.select(); feld.setSelectionRange(0, APP_LINK.length);
+      var ok = false; try { ok = document.execCommand("copy"); } catch (e) {}
+      feld.remove();
+      if (ok) fertig(); else status.textContent = "Kopieren ging nicht. Der Link lautet: " + APP_LINK;
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(APP_LINK).then(fertig, alternativ);
+    else alternativ();
+  });
+
+  document.getElementById("app-update").addEventListener("click", function () {
+    var knopf = this, status = document.getElementById("update-status");
+    var melde = function (t) { status.textContent = t; };
+    if (!navigator.onLine) { melde("Kein Internet – bitte später mit WLAN noch einmal tippen."); return; }
+    knopf.disabled = true;
+    melde("Suche nach einer neuen Version …");
+    var alt = document.getElementById("app-version").textContent, neu = null;
+    // 1. Neueste Version direkt vom Server holen (am Offline-Speicher vorbei)
+    fetch("sw.js?pruefen=" + Date.now(), { cache: "no-store" })
+      .then(function (r) { if (!r.ok) throw new Error("Server"); return r.text(); })
+      .then(function (t) {
+        neu = versionAus(t);
+        // 2. Offline-Speicher der App frisch vom Server füllen
+        if (!window.caches) return;
+        return caches.keys().then(function (namen) {
+          return Promise.all(namen.filter(function (n) { return n.indexOf("indien-reise") === 0; }).map(function (n) {
+            return caches.open(n).then(function (c) {
+              return c.keys().then(function (anfragen) {
+                return Promise.all(anfragen.map(function (a) {
+                  return fetch(a.url, { cache: "reload" }).then(function (r) { if (r.ok) return c.put(a, r); });
+                }));
+              });
+            });
+          }));
+        });
+      })
+      .then(function () {
+        // 3. Neue Hintergrund-Version des Offline-Skripts anstoßen
+        if (navigator.serviceWorker && navigator.serviceWorker.getRegistration) {
+          return navigator.serviceWorker.getRegistration().then(function (reg) { if (reg) return reg.update(); });
+        }
+      })
+      .then(function () {
+        melde(neu && neu !== alt ? "Neue Version " + neu + " geladen – die App startet neu …" : "Die App ist aktuell (Version " + (neu || alt) + ") – sie wird neu geladen …");
+        setTimeout(function () { location.reload(); }, 1200);
+      })
+      .catch(function () {
+        knopf.disabled = false;
+        melde("Das Update hat nicht geklappt. Bitte später mit WLAN noch einmal versuchen.");
+      });
   });
 
   // ---------- Offline-Betrieb ----------
