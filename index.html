@@ -56,10 +56,10 @@
 
   /* Start-Kacheln */
   /* minmax(0, 1fr): Spalte darf schmaler werden als der Inhalt (wichtig für Safari) */
-  .tiles { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; margin-top: 12px; }
+  .tiles { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; margin-top: 12px; }
   .tile {
-    display: flex; align-items: center; gap: 14px; min-width: 0; overflow: hidden;
-    width: 100%; min-height: 64px; padding: 8px 14px;
+    display: flex; align-items: center; gap: 14px; min-width: 0; overflow: hidden; line-height: 1.25;
+    width: 100%; min-height: 60px; padding: 6px 14px;
     border: 3px solid var(--blue); border-radius: 16px;
     background: var(--card); color: var(--text);
     font: inherit; font-size: 1.1em; font-weight: 700; text-align: left;
@@ -280,6 +280,37 @@
   }
   .overlay-tasten .primaer { background: var(--blue); color: #fff; }
 
+  /* Meine Dokumente */
+  .dok-kopf { display: flex; align-items: center; gap: 12px; }
+  .dok-kopf .dicon { flex: none; font-size: 2em; line-height: 1; }
+  .dok-kopf .text { flex: 1; min-width: 0; }
+  .dok-kopf .text b { display: block; overflow-wrap: anywhere; }
+  .knopf-gross {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    min-height: 64px; padding: 8px; border-radius: 14px; border: 0;
+    font: inherit; font-weight: 700; font-size: 0.95em; cursor: pointer; color: #fff; background: var(--blue);
+  }
+  .knopf-gross.weg { background: var(--card); color: var(--red); border: 2px solid var(--red); }
+  .zugang { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text); }
+  .zugang .dicon { font-size: 1.8em; }
+  .dok-ansicht {
+    position: fixed; inset: 0; z-index: 60; background: #fff; display: flex; flex-direction: column;
+    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  }
+  .dok-ansicht[hidden] { display: none; }
+  .dok-leiste { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-bottom: 2px solid var(--line); }
+  .dok-leiste b { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dok-leiste button, .dok-fuss button {
+    min-height: 52px; padding: 8px 16px; border-radius: 12px; border: 0; background: var(--blue); color: #fff;
+    font: inherit; font-weight: 700; cursor: pointer;
+  }
+  #dok-inhalt { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; background: #eee; }
+  #dok-inhalt img { display: block; width: 100%; height: auto; }
+  #dok-inhalt iframe { width: 100%; height: 100%; border: 0; background: #fff; }
+  .dok-fuss { padding: 10px 16px; border-top: 2px solid var(--line); }
+  .dok-fuss button { width: 100%; background: var(--card); color: var(--blue); border: 2px solid var(--blue); }
+  .dok-fuss[hidden] { display: none; }
+
   .uhr { display: flex; gap: 12px; margin-top: 12px; }
   .uhr > div { flex: 1; min-width: 0; background: var(--card); border: 2px solid var(--line); border-radius: 12px; padding: 10px 12px; }
   .uhr .zeit { font-size: 1.35em; font-weight: 800; white-space: nowrap; margin: 0; }
@@ -302,6 +333,7 @@
     <button class="tile heute" data-go="heute"><span class="ico">📅</span><span>Heute<span class="sub" id="heute-sub">Wo bin ich, welches Hotel?</span></span></button>
     <button class="tile" data-go="hotels"><span class="ico">🏨</span><span>Alle Hotels<span class="sub">Reiseroute Tag für Tag</span></span></button>
     <button class="tile" data-go="fluege"><span class="ico">✈️</span><span>Flüge<span class="sub">Hinflug und Rückflug</span></span></button>
+    <button class="tile" data-go="dokumente"><span class="ico">📁</span><span>Meine Dokumente<span class="sub">Pass, Visum, Bordkarte – auch offline</span></span></button>
     <button class="tile" data-go="chat"><span class="ico">💬</span><span>Frage stellen<span class="sub">Fragen zur Reise und mehr</span></span></button>
     <button class="tile" data-go="gruppe"><span class="ico">👥</span><span>Gruppe<span class="sub">Reiseleiter und Mitreisende</span></span></button>
     <button class="tile" data-go="infos"><span class="ico">ℹ️</span><span>Wichtige Hinweise<span class="sub">Regeln, Gepäck, Krankheit</span></span></button>
@@ -375,10 +407,23 @@
   <div id="archiv-liste"></div>
 </section>
 
+<!-- ============ MEINE DOKUMENTE ============ -->
+<section id="dokumente" class="screen">
+  <button class="back" data-back="1">◀ Zurück</button>
+  <h1>Meine Dokumente</h1>
+  <p class="small muted">Pass, Visum, Bordkarte, Versicherungskarte … Die Dateien werden <b>nur auf diesem iPhone</b> gespeichert und funktionieren ohne Internet. Nichts wird hochgeladen.</p>
+  <button type="button" class="senden" id="dok-neu">➕ Dokument hinzufügen</button>
+  <input type="file" id="dok-datei" accept="image/*,application/pdf" multiple hidden>
+  <p class="small muted" style="margin-top:8px">Tipp: Ein Foto oder Bildschirmfoto lässt sich am besten anzeigen. PDFs gehen auch.</p>
+  <div id="dok-liste"></div>
+</section>
+
 <!-- ============ FLÜGE ============ -->
 <section id="fluege" class="screen">
   <button class="back" data-go="start">◀ Zurück zur Übersicht</button>
   <h1>Flüge</h1>
+
+  <a class="card tap zugang" href="#dokumente"><span class="dicon">📁</span><span style="flex:1;min-width:0"><b>Meine Dokumente</b><br><span class="small muted">Bordkarte, Pass und Visum ansehen – auch offline</span></span><span class="pfeil" style="font-size:1.8em;color:var(--blue)">›</span></a>
 
   <div class="card">
     <p class="label">Buchungsnummer (für Check-in)</p>
@@ -453,6 +498,7 @@
     <p class="small">Montag bis Freitag, 8 bis 17 Uhr (deutsche Zeit)</p>
     <a class="call" href="tel:+4923319046">📞 Wikinger Service<span class="nr">+49 2331 9046</span></a>
   </div>
+  <a class="card tap zugang" href="#dokumente"><span class="dicon">📁</span><span style="flex:1;min-width:0"><b>Pass verloren?</b><br><span class="small muted">Kopien in „Meine Dokumente“ – Reiseleitung anrufen</span></span><span class="pfeil" style="font-size:1.8em;color:var(--blue)">›</span></a>
   <div class="card">
     <h3>Karte verloren oder gestohlen?</h3>
     <p class="small">Sperr-Notruf für EC-, Kredit- und Handykarten</p>
@@ -506,6 +552,8 @@
 <section id="infos" class="screen">
   <button class="back" data-go="start">◀ Zurück zur Übersicht</button>
   <h1>Wichtige Hinweise</h1>
+
+  <a class="card tap zugang" href="#dokumente"><span class="dicon">📁</span><span style="flex:1;min-width:0"><b>Meine Dokumente</b><br><span class="small muted">Kopien von Pass, Visum und Versicherung</span></span><span class="pfeil" style="font-size:1.8em;color:var(--blue)">›</span></a>
 
   <div class="card hinweis">
     <h3>In Indien verboten</h3>
@@ -574,6 +622,18 @@
       <button type="button" id="fakt-noch">🔄 Noch einer</button>
       <button type="button" id="fakt-zu" class="primaer">Schließen</button>
     </div>
+  </div>
+</div>
+
+<!-- ============ DOKUMENT ANSEHEN (Overlay) ============ -->
+<div id="dok-overlay" class="dok-ansicht" hidden>
+  <div class="dok-leiste">
+    <b id="dok-titel"></b>
+    <button type="button" id="dok-zu">Schließen</button>
+  </div>
+  <div id="dok-inhalt"></div>
+  <div class="dok-fuss" id="dok-fuss">
+    <button type="button" id="dok-teilen">📤 Teilen / in anderer App öffnen</button>
   </div>
 </div>
 
@@ -794,6 +854,126 @@
   document.getElementById("fakt-overlay").addEventListener("click", function (e) { if (e.target === this) schliesseFakt(); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") schliesseFakt(); });
 
+  // ---------- Meine Dokumente (nur auf diesem iPhone, in IndexedDB) ----------
+  // Die Dateien verlassen das Gerät nie: kein Upload, kein Server.
+  var dokDb = null;
+  function dokDatenbank() {
+    return new Promise(function (ok, fehler) {
+      if (dokDb) return ok(dokDb);
+      if (!window.indexedDB) return fehler(new Error("kein Speicher"));
+      var r;
+      try { r = indexedDB.open("reise-dokumente", 1); } catch (e) { return fehler(e); }
+      r.onupgradeneeded = function () { r.result.createObjectStore("dateien", { keyPath: "id" }); };
+      r.onsuccess = function () { dokDb = r.result; ok(dokDb); };
+      r.onerror = function () { fehler(r.error); };
+    });
+  }
+  function dokAktion(modus, arbeit) {
+    return dokDatenbank().then(function (db) {
+      return new Promise(function (ok, fehler) {
+        var tx = db.transaction("dateien", modus), store = tx.objectStore("dateien"), ergebnis;
+        var req = arbeit(store);
+        if (req) req.onsuccess = function () { ergebnis = req.result; };
+        tx.oncomplete = function () { ok(ergebnis); };
+        tx.onerror = function () { fehler(tx.error); };
+      });
+    });
+  }
+  function dokAlle() { return dokAktion("readonly", function (s) { return s.getAll(); }).then(function (l) { return (l || []).sort(function (a, b) { return a.datum - b.datum; }); }); }
+  function dokHole(id) { return dokAktion("readonly", function (s) { return s.get(id); }); }
+  function dokLoesche(id) { return dokAktion("readwrite", function (s) { return s.delete(id); }); }
+  function dokSpeichere(datei, titel) {
+    return new Promise(function (ok, fehler) {
+      var leser = new FileReader();
+      leser.onload = function () {
+        var eintrag = { id: Date.now() + "-" + Math.floor(Math.random() * 1e6), titel: titel, name: datei.name,
+                        typ: datei.type || "", groesse: datei.size, datum: Date.now(), daten: leser.result };
+        dokAktion("readwrite", function (s) { return s.put(eintrag); }).then(ok, fehler);
+      };
+      leser.onerror = function () { fehler(leser.error); };
+      leser.readAsArrayBuffer(datei);
+    });
+  }
+  function dokGroesse(b) { return b > 1048576 ? (b / 1048576).toFixed(1).replace(".", ",") + " MB" : Math.max(1, Math.round(b / 1024)) + " KB"; }
+  function istPdf(d) { return /pdf/i.test(d.typ) || /\.pdf$/i.test(d.name); }
+
+  function renderDokumente() {
+    var liste = document.getElementById("dok-liste");
+    dokAlle().then(function (doks) {
+      if (!doks.length) { liste.innerHTML = '<div class="card"><p style="margin:0">Noch keine Dokumente gespeichert.</p></div>'; return; }
+      liste.innerHTML = doks.map(function (d) {
+        var dt = new Date(d.datum);
+        return '<div class="card"><div class="dok-kopf"><span class="dicon">' + (istPdf(d) ? "📄" : "🖼️") + '</span>' +
+               '<div class="text"><b>' + esc(d.titel) + '</b><span class="small muted">' + (istPdf(d) ? "PDF" : "Bild") + ' · ' + dokGroesse(d.groesse) +
+               ' · gespeichert am ' + dt.getDate() + '.' + (dt.getMonth() + 1) + '.</span></div></div>' +
+               '<div class="aktionen"><button type="button" class="knopf-gross" data-dok-auf="' + esc(d.id) + '"><span class="ai">👁</span>Ansehen</button>' +
+               '<button type="button" class="knopf-gross weg" data-dok-weg="' + esc(d.id) + '"><span class="ai">🗑</span>Löschen</button></div></div>';
+      }).join("");
+    }, function () {
+      liste.innerHTML = '<div class="card hinweis"><p style="margin:0">Der Speicher für Dokumente ist hier nicht verfügbar. Bitte die App vom Home-Bildschirm aus öffnen.</p></div>';
+    });
+  }
+
+  var dokUrl = null, dokDatei = null;
+  function oeffneDokument(id) {
+    dokHole(id).then(function (d) {
+      if (!d) return;
+      var blob = new Blob([d.daten], { type: d.typ || (istPdf(d) ? "application/pdf" : "image/jpeg") });
+      if (dokUrl) URL.revokeObjectURL(dokUrl);
+      dokUrl = URL.createObjectURL(blob);
+      try { dokDatei = new File([blob], d.name || "dokument", { type: blob.type }); } catch (e) { dokDatei = null; }
+      document.getElementById("dok-titel").textContent = d.titel;
+      document.getElementById("dok-inhalt").innerHTML = istPdf(d)
+        ? '<iframe src="' + dokUrl + '" title="' + esc(d.titel) + '"></iframe>'
+        : '<img src="' + dokUrl + '" alt="' + esc(d.titel) + '">';
+      // Teilen/Öffnen in einer anderen App (z. B. Dateien, Bücher) – nur wenn das iPhone es anbietet
+      var kannTeilen = !!(dokDatei && navigator.canShare && navigator.canShare({ files: [dokDatei] }));
+      document.getElementById("dok-fuss").hidden = !kannTeilen;
+      document.getElementById("dok-overlay").hidden = false;
+    });
+  }
+  function schliesseDokument() {
+    document.getElementById("dok-overlay").hidden = true;
+    document.getElementById("dok-inhalt").innerHTML = "";
+    if (dokUrl) { URL.revokeObjectURL(dokUrl); dokUrl = null; }
+  }
+  document.getElementById("dok-zu").addEventListener("click", schliesseDokument);
+  document.getElementById("dok-teilen").addEventListener("click", function () {
+    if (dokDatei && navigator.share) navigator.share({ files: [dokDatei], title: document.getElementById("dok-titel").textContent }).catch(function () {});
+  });
+  document.getElementById("dok-neu").addEventListener("click", function () { document.getElementById("dok-datei").click(); });
+  document.getElementById("dok-datei").addEventListener("change", function () {
+    var dateien = Array.prototype.slice.call(this.files || []);
+    this.value = "";
+    if (!dateien.length) return;
+    // Dauerhaften Speicher anfragen, damit das iPhone die Dateien nicht von selbst aufräumt
+    try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
+    var kette = Promise.resolve();
+    dateien.forEach(function (datei) {
+      kette = kette.then(function () {
+        var vorschlag = (datei.name || "Dokument").replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ");
+        if (/^(img|image|foto|photo)\s*\d*/i.test(vorschlag)) vorschlag = "";
+        var titel = window.prompt("Wie soll das Dokument heißen? (z. B. Reisepass, Visum, Bordkarte)", vorschlag);
+        if (titel === null) return; // abgebrochen
+        return dokSpeichere(datei, titel.trim() || vorschlag || "Dokument");
+      });
+    });
+    kette.then(renderDokumente, function () {
+      window.alert("Das Dokument konnte nicht gespeichert werden. Vielleicht ist der Speicher voll.");
+      renderDokumente();
+    });
+  });
+  document.getElementById("dok-liste").addEventListener("click", function (e) {
+    var auf = e.target.closest("[data-dok-auf]");
+    if (auf) { oeffneDokument(auf.getAttribute("data-dok-auf")); return; }
+    var weg = e.target.closest("[data-dok-weg]");
+    if (weg) {
+      var id = weg.getAttribute("data-dok-weg");
+      var titel = weg.closest(".card").querySelector("b").textContent;
+      if (window.confirm("„" + titel + "“ wirklich aus der App löschen? (Das Original in Dateien/Fotos bleibt erhalten.)")) dokLoesche(id).then(renderDokumente);
+    }
+  });
+
   // ---------- Checklisten vor dem Flug (Haken werden nur auf diesem iPhone gespeichert) ----------
   var CHECKLISTEN = {
     hin: {
@@ -943,7 +1123,8 @@
             '<dt>Buchungsnummer</dt><dd style="letter-spacing:0.08em">YLYYSQ</dd></dl></div>';
     html += '<div class="card hinweis"><h3>⚠️ Ohne Bordkarte kein Zutritt</h3>' +
             '<p>In Delhi wird schon am <b>Eingang des Flughafens</b> kontrolliert: Hinein kommt nur, wer <b>Reisepass und Bordkarte</b> vorzeigt.</p>' +
-            '<p style="margin:0">Deshalb vorher <b>online einchecken</b> – die Reiseleitung hilft – und die Bordkarte ausdrucken oder auf dem Handy bereithalten.</p></div>';
+            '<p style="margin:0">Deshalb vorher <b>online einchecken</b> – die Reiseleitung hilft – und die Bordkarte ausdrucken oder auf dem Handy bereithalten.</p>' +
+            '<p style="margin:10px 0 0"><a href="#dokumente">📁 Bordkarte in „Meine Dokumente“ speichern ›</a></p></div>';
     html += '<div class="card"><h3>So läuft die Nacht ab</h3><ul>' +
             '<li>Donnerstag, 10.12.: Tageszimmer im Hotel Dee Marks nahe dem Flughafen zum Frischmachen.</li>' +
             '<li>Kurz nach Mitternacht: gemeinsamer Transfer zum Flughafen.</li>' +
@@ -1404,6 +1585,7 @@
     if (id === "start") renderHeute();
     if (id === "chat" && !chatBusy) ladeChat(); // aktives Gespräch anzeigen
     if (id === "archiv") renderArchiv();
+    if (id === "dokumente") renderDokumente();
     if (id === "fluege") {
       document.getElementById("fluege-check-hin").innerHTML = checklisteHtml("hin", true);
       document.getElementById("fluege-check-rueck").innerHTML = checklisteHtml("rueck", true);
