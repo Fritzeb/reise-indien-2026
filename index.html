@@ -555,12 +555,6 @@
   </div>
 
   <div class="card">
-    <p class="label">Zimmer geteilt mit</p>
-    <p class="big">Hans-Christian H.</p>
-    <p class="small muted" style="margin:0">Zweibettzimmer, bei der Kamelsafari Zweipersonenzelt.</p>
-  </div>
-
-  <div class="card">
     <h3>Mitreisende</h3>
     <ul class="names">
       <li>Burkhard W.</li>
@@ -1494,9 +1488,6 @@
       try { de = n.toLocaleTimeString("de-DE", Object.assign({ timeZone: "Europe/Berlin" }, opt)); } catch (e) {}
       return '<p>Hier ist es <b>' + n.toLocaleTimeString("de-DE", opt) + ' Uhr</b>' + (de ? ', in Deutschland <b>' + de + ' Uhr</b>' : '') + '.</p>' +
              '<p>Indien ist Deutschland im Winter <b>4½ Stunden voraus</b>.</p>';
-    }
-    if (/zimmer.*(partner|mit wem|teil)|mit wem.*zimmer|hufeland|hans-christian/.test(f)) {
-      return '<p>Das Zimmer teilst du mit <b>Hans-Christian H.</b> – bei der Kamelsafari auch das Zelt.</p>';
     }
     if (/wie viele tage|wieviele tage|welcher tag|der wievielte/.test(f)) {
       i = aktuellerIndex();
