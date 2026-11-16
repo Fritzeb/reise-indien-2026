@@ -553,11 +553,6 @@
     <p class="small">Sperr-Notruf für EC-, Kredit- und Handykarten</p>
     <a class="call" href="tel:+49116116">📞 Karte sperren<span class="nr">+49 116 116</span></a>
   </div>
-  <div class="card">
-    <h3>Reiseversicherung ERGO (ERV)</h3>
-    <p class="small">Nur falls über Wikinger bei der ERGO versichert</p>
-    <a class="call" href="tel:+498941661010">📞 ERGO Notrufzentrale<span class="nr">+49 89 41661010</span></a>
-  </div>
 </section>
 
 <!-- ============ GRUPPE ============ -->
@@ -1662,6 +1657,15 @@
   });
   // "Passt nicht? Die KI fragen" – auch für gespeicherte Antworten
   document.getElementById("chat-verlauf").addEventListener("click", function (e) {
+    // Dokument direkt aus der Chat-Antwort öffnen
+    var dok = e.target.closest("[data-dok-auf]");
+    if (dok) {
+      dokHole(dok.getAttribute("data-dok-auf")).then(function (d) {
+        if (d) oeffneDokument(d.id);
+        else window.alert("Dieses Dokument ist nicht mehr gespeichert. Bitte unter „Meine Dokumente“ neu hinzufügen.");
+      }, function () {});
+      return;
+    }
     var k = e.target.closest(".ki-fragen");
     if (!k || chatBusy) return;
     var frage = k.getAttribute("data-ki");
@@ -1710,17 +1714,73 @@
       });
   }
 
+  // ---------- Chat: Fragen zu "Meine Dokumente" (nur offline, nichts wird hochgeladen) ----------
+  // Gesucht wird in den Namen, die beim Hinzufügen vergeben wurden (z. B. "Reisepass").
+  var DOK_ARTEN = [
+    { re: /reisepass|\bpass\b|passport|ausweis/, such: ["pass", "ausweis"], name: "Reisepass" },
+    { re: /visum|visa\b|evisa/, such: ["visum", "visa"], name: "Visum" },
+    { re: /versicher|krankenkasse|krankenkarte/, such: ["versich", "kranken", "kasse"], name: "Versicherung" },
+    { re: /bordkarte|boarding|flugticket|flugschein/, such: ["bord", "boarding", "flugticket", "lh 76", "lh76"], name: "Bordkarte" },
+    { re: /impf/, such: ["impf"], name: "Impfpass" },
+    { re: /fuehrerschein/, such: ["fuehrer"], name: "Führerschein" },
+    { re: /bahnticket|zugticket|rail.?fly|fahrkarte/, such: ["bahn", "rail", "zug", "fahrkarte"], name: "Bahnticket" }
+  ];
+  function dokKnopf(d) {
+    return '<button type="button" class="check" data-dok-auf="' + esc(d.id) + '" style="margin:6px 0">' +
+           '<span style="font-size:1.4em">' + (istPdf(d) ? "📄" : "🖼️") + '</span><span class="ctext"><b>' + esc(d.titel) + '</b> ansehen</span>' +
+           '<span style="color:var(--blue);font-size:1.5em">›</span></button>';
+  }
+  // Liefert (als Promise) HTML, wenn die Frage ein Dokument betrifft, sonst null
+  function dokumentAntwort(frage) {
+    var f = norm(frage);
+    var arten = DOK_ARTEN.filter(function (a) { return a.re.test(f); });
+    var allgemein = /dokument|unterlagen|papiere/.test(f);
+    if (!arten.length && !allgemein) return Promise.resolve(null);
+    var verloren = /verlor|gestohlen|weg\b|vermisse|finde .* nicht/.test(f);
+    return dokAlle().then(function (doks) {
+      var treffer = arten.length ? doks.filter(function (d) {
+        var t = norm(d.titel + " " + (d.name || ""));
+        return arten.some(function (a) { return a.such.some(function (s) { return t.indexOf(s) >= 0; }); });
+      }) : doks;
+      var html = "";
+      if (verloren) {
+        html += '<p>Wenn etwas <b>verloren oder gestohlen</b> ist: sofort die Reiseleitung anrufen.</p>' +
+                telLink("+919811682460", "Reiseleitung anrufen").replace('class="call"', 'class="call rot"');
+      }
+      var was = arten.length ? arten.map(function (a) { return a.name; }).join(" / ") : "Dokumente";
+      if (treffer.length) {
+        html += '<p' + (verloren ? ' style="margin-top:12px"' : '') + '>' + (arten.length ? 'Gefunden in „Meine Dokumente“:' : 'Diese Dokumente sind in der App gespeichert:') + '</p>';
+        html += treffer.map(dokKnopf).join("");
+      } else {
+        html += '<p' + (verloren ? ' style="margin-top:12px"' : '') + '>In „Meine Dokumente“ ist ' + (doks.length ? 'kein Dokument „' + esc(was) + '“' : 'noch nichts') + ' gespeichert.</p>' +
+                '<p style="margin:0"><a href="#dokumente">📁 Zu „Meine Dokumente“ – dort ein Foto hinzufügen ›</a></p>';
+      }
+      if (/pass/.test(f) && !verloren) html += '<p class="small muted" style="margin:10px 0 0">Das Original bitte immer sicher am Körper oder im Hotelsafe aufbewahren.</p>';
+      return html;
+    }, function () {
+      return '<p>Die gespeicherten Dokumente kann ich hier gerade nicht lesen. <a href="#dokumente">Zu „Meine Dokumente“ ›</a></p>';
+    });
+  }
+
   function stelleFrage(frage) {
     frage = (frage || "").trim();
     if (!frage || chatBusy) return;
     blase(esc(frage), "ich");
-    var html = offlineAntwort(frage);
-    if (html) {
-      chatVerlauf.push({ role: "user", content: frage }, { role: "assistant", content: nurText(html) });
-      blase(html, "bot", '<button class="ki-fragen" type="button" data-ki="' + esc(frage) + '">Passt nicht? Die KI fragen (Internet)</button>');
-    } else {
-      frageOnline(frage);
-    }
+    // Zuerst: geht es um ein gespeichertes Dokument? (Antwort nur aus dem iPhone-Speicher)
+    dokumentAntwort(frage).then(function (dokHtml) {
+      if (dokHtml) {
+        chatVerlauf.push({ role: "user", content: frage }, { role: "assistant", content: nurText(dokHtml) });
+        blase(dokHtml, "bot");
+        return;
+      }
+      var html = offlineAntwort(frage);
+      if (html) {
+        chatVerlauf.push({ role: "user", content: frage }, { role: "assistant", content: nurText(html) });
+        blase(html, "bot", '<button class="ki-fragen" type="button" data-ki="' + esc(frage) + '">Passt nicht? Die KI fragen (Internet)</button>');
+      } else {
+        frageOnline(frage);
+      }
+    });
   }
 
   function setzeSendenStatus() {
