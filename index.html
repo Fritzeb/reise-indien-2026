@@ -319,6 +319,11 @@
     font: inherit; font-weight: 700; font-size: 0.95em; cursor: pointer; color: #fff; background: var(--blue);
   }
   .knopf-gross.weg { background: var(--card); color: var(--red); border: 2px solid var(--red); }
+  .dok-suche {
+    width: 100%; min-height: 52px; margin-top: 12px; padding: 10px 12px; border-radius: 12px;
+    border: 2px solid var(--blue); font: inherit; background: var(--card); color: var(--text);
+  }
+  .dok-suche[hidden] { display: none; }
   .zugang { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text); }
   .zugang .dicon { font-size: 1.8em; }
   .dok-ansicht {
@@ -464,6 +469,7 @@
   <button type="button" class="senden" id="dok-neu">➕ Dokument hinzufügen</button>
   <input type="file" id="dok-datei" accept="image/*,application/pdf" multiple hidden>
   <p class="small muted" style="margin-top:8px">Tipp: Ein Foto oder Bildschirmfoto lässt sich am besten anzeigen. PDFs gehen auch.</p>
+  <input type="search" id="dok-suche" class="dok-suche" placeholder="🔎 Dokument suchen, z. B. Terminal" autocomplete="off" hidden>
   <div id="dok-liste"></div>
 </section>
 
@@ -946,9 +952,15 @@
   function istPdf(d) { return /pdf/i.test(d.typ) || /\.pdf$/i.test(d.name); }
 
   function renderDokumente() {
-    var liste = document.getElementById("dok-liste");
+    var liste = document.getElementById("dok-liste"), suche = document.getElementById("dok-suche");
     dokAlle().then(function (doks) {
+      suche.hidden = doks.length < 2; // Suchfeld erst ab zwei Dokumenten
       if (!doks.length) { liste.innerHTML = '<div class="card"><p style="margin:0">Noch keine Dokumente gespeichert.</p></div>'; return; }
+      var begriff = suche.hidden ? "" : norm(suche.value.trim());
+      if (begriff) {
+        doks = doks.filter(function (d) { return norm(d.titel + " " + (d.name || "")).indexOf(begriff) >= 0; });
+        if (!doks.length) { liste.innerHTML = '<div class="card"><p style="margin:0">Kein Dokument mit „' + esc(suche.value.trim()) + '“ gefunden.</p></div>'; return; }
+      }
       liste.innerHTML = doks.map(function (d) {
         var dt = new Date(d.datum);
         return '<div class="card"><div class="dok-kopf"><span class="dicon">' + (istPdf(d) ? "📄" : "🖼️") + '</span>' +
@@ -989,6 +1001,7 @@
   document.getElementById("dok-teilen").addEventListener("click", function () {
     if (dokDatei && navigator.share) navigator.share({ files: [dokDatei], title: document.getElementById("dok-titel").textContent }).catch(function () {});
   });
+  document.getElementById("dok-suche").addEventListener("input", renderDokumente);
   document.getElementById("dok-neu").addEventListener("click", function () { document.getElementById("dok-datei").click(); });
   document.getElementById("dok-datei").addEventListener("change", function () {
     var dateien = Array.prototype.slice.call(this.files || []);
@@ -1428,6 +1441,17 @@
     return '<a class="call" href="tel:' + tel + '">📞 ' + esc(text) + '<span class="nr">' + telAnzeige(tel) + '</span></a>';
   }
 
+  // Wird ein Ort oder Hotel ausdrücklich genannt? Index in TAGE oder -1
+  function ortImText(f) {
+    for (var j = 0; j < TAGE.length; j++) {
+      var tg = TAGE[j];
+      if (!tg.h) continue;
+      var h = HOTELS[tg.h];
+      if (f.indexOf(norm(h.ort)) >= 0 || f.indexOf(norm(h.name.replace(" (Tageszimmer)", ""))) >= 0) return j;
+    }
+    return -1;
+  }
+
   // Welcher Reisetag ist gemeint? Gibt den Index in TAGE zurück (oder -1)
   function gemeinterTag(f) {
     var m = /tag\s*(\d{1,2})\b/.exec(f);
@@ -1440,12 +1464,8 @@
       }
     }
     // Orts- oder Hotelname
-    for (var j = 0; j < TAGE.length; j++) {
-      var tg = TAGE[j];
-      if (!tg.h) continue;
-      var h = HOTELS[tg.h];
-      if (f.indexOf(norm(h.ort)) >= 0 || f.indexOf(norm(h.name.replace(" (Tageszimmer)", ""))) >= 0) return j;
-    }
+    var o = ortImText(f);
+    if (o >= 0) return o;
     // Relativ zu heute: heute / morgen / übermorgen / gestern
     var plus = /uebermorgen/.test(f) ? 2 : (/morgen/.test(f) && !/heute morgen/.test(f)) ? 1 : /gestern/.test(f) ? -1 : 0;
     var hd = heuteDatum(), start = parse(TAGE[0].d);
@@ -1515,8 +1535,8 @@
     }
     // Nur ein Ortsname, z. B. "Jaipur?"
     if (f.split(/\s+/).length <= 3) {
-      i = gemeinterTag(f);
-      if (i >= 0 && /[a-z]/.test(f) && !/heute|morgen|gestern/.test(f)) return hotelAntwort(i) + programmAntwort(i);
+      i = ortImText(f); // nur wenn wirklich ein Ort/Hotel genannt ist
+      if (i >= 0) return hotelAntwort(i) + programmAntwort(i);
     }
     return null;
   }
@@ -1762,6 +1782,22 @@
     });
   }
 
+  // Freie Suche: Wörter aus der Frage, die im Namen eines Dokuments vorkommen (z. B. "Terminal")
+  var SUCH_STOPP = ["mein", "meine", "meinen", "meiner", "meines", "zeig", "zeige", "zeigen", "bitte", "habe", "haben", "hast",
+                    "wird", "wann", "heute", "morgen", "gibt", "noch", "einmal", "dokument", "dokumente", "datei", "foto", "bild",
+                    "eine", "einen", "einem", "einer", "dein", "deine", "kann", "koennen", "sind", "ist", "wo", "was", "wie", "welche", "welcher"];
+  function woerter(text) {
+    return norm(text).split(/[^a-z0-9]+/).filter(function (w) { return w.length >= 4 && SUCH_STOPP.indexOf(w) < 0; });
+  }
+  function freieDokTreffer(frage, doks) {
+    var fw = woerter(frage);
+    if (!fw.length) return [];
+    return doks.filter(function (d) {
+      var tw = woerter(d.titel + " " + (d.name || "").replace(/\.[^.]+$/, ""));
+      return fw.some(function (q) { return tw.some(function (t) { return t.indexOf(q) === 0 || q.indexOf(t) === 0; }); });
+    });
+  }
+
   function stelleFrage(frage) {
     frage = (frage || "").trim();
     if (!frage || chatBusy) return;
@@ -1773,13 +1809,23 @@
         blase(dokHtml, "bot");
         return;
       }
-      var html = offlineAntwort(frage);
-      if (html) {
-        chatVerlauf.push({ role: "user", content: frage }, { role: "assistant", content: nurText(html) });
-        blase(html, "bot", '<button class="ki-fragen" type="button" data-ki="' + esc(frage) + '">Passt nicht? Die KI fragen (Internet)</button>');
-      } else {
-        frageOnline(frage);
-      }
+      // Dann: passt ein Wort der Frage zum Namen eines gespeicherten Dokuments?
+      return dokAlle().catch(function () { return []; }).then(function (doks) {
+        var treffer = freieDokTreffer(frage, doks);
+        var trefferHtml = treffer.length ? '<p>Passend in „Meine Dokumente“:</p>' + treffer.map(dokKnopf).join("") : "";
+        var html = offlineAntwort(frage);
+        if (html) {
+          chatVerlauf.push({ role: "user", content: frage }, { role: "assistant", content: nurText(html) });
+          blase(html, "bot", '<button class="ki-fragen" type="button" data-ki="' + esc(frage) + '">Passt nicht? Die KI fragen (Internet)</button>');
+          if (trefferHtml) blase(trefferHtml, "bot");
+        } else if (trefferHtml) {
+          // Nur Dokumente gefunden: keine Internet-Anfrage, außer man tippt auf "KI fragen"
+          chatVerlauf.push({ role: "user", content: frage }, { role: "assistant", content: nurText(trefferHtml) });
+          blase(trefferHtml, "bot", '<button class="ki-fragen" type="button" data-ki="' + esc(frage) + '">Etwas anderes gemeint? Die KI fragen (Internet)</button>');
+        } else {
+          frageOnline(frage);
+        }
+      });
     });
   }
 
